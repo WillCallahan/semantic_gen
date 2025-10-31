@@ -167,6 +167,46 @@ loginButton.click();
 
 ---
 
+## 🚀 Pub.dev Publishing Best Practices
+
+- **Pubspec metadata**: Fill out `description`, `homepage`, `repository`, `issue_tracker`, `documentation`, `topics`, and `funding` (if applicable). Keep `version` in sync with `CHANGELOG.md` and follow semantic versioning.
+- **Screenshots & topics**: Provide at least one screenshot or animated GIF in `example/` and reference it in the README; define 2-5 relevant `topics` in `pubspec.yaml`.
+- **Lint + format**: Enforce `dart format .`, `flutter analyze`, and `dart analyze` on CI; ensure `analysis_options.yaml` enables `flutter_lints` + `public_member_api_docs`.
+- **Testing discipline**: Maintain passing `dart test` and `flutter test`; add coverage-friendly unit tests for generator outputs (golden files in `test/fixtures/`).
+- **Documentation quality**: Run `dart doc` locally to confirm public API docs generate without warnings; document all public members.
+- **Score readiness**: Run `pana .` before releases and address all actionable suggestions to keep the package score ≥ 120.
+- **Dry run before publish**: Execute `flutter pub publish --dry-run` (and save output in CI artifacts) to ensure no blockers.
+- **Example app**: Keep `example/` in sync with the package API, ensure it runs on web (`flutter run -d chrome example`), and document Selenium steps in `example/test_driver/`.
+- **Continuous delivery**: Tag releases with `v<version>` and automate publishing validation in GitHub Actions (but leave the final `pub publish` manual unless secrets are injected).
+
+---
+
+## 📝 README Requirements
+
+Every release must include an up-to-date `README.md` at the repository root that covers:
+
+1. **Value proposition** – concise summary of what `flutter_test_tags` solves.
+2. **Quick start** – add `pubspec.yaml` snippet, installation steps, and minimal usage example with `@TestId`/`testTag`.
+3. **Generated wrappers overview** – explain how default auto-wrapping works and how to extend it via annotations or configuration.
+4. **Example demo** – link to the `example/` app, include screenshots/GIFs, and describe Selenium integration steps.
+5. **Configuration** – document builder options (`build.yaml`), custom widget lists, and relevant CLI commands.
+6. **Testing & CI** – list required local commands (`dart format`, `flutter analyze`, `dart test`, `pana .`) and reference GitHub Actions status badge.
+7. **Contributing** – outline contribution workflow, code style guardrails, and how to regenerate code (`dart run build_runner build -d`).
+8. **License** – cite the chosen license and link to the `LICENSE` file.
+
+README updates should accompany any API change or feature addition, and CI must fail if README checksums (or docs tests) are out of date.
+
+---
+
+## 📄 Licensing Requirements
+
+- Use an [OSI-approved](https://opensource.org/licenses) license. Default to **MIT** unless legal guidance dictates otherwise.
+- Store the full license text in `LICENSE` at the repository root. Keep copyright notices current.
+- Reference the license in `pubspec.yaml`, `README.md`, and `example/pubspec.yaml`.
+- Confirm license compliance for all dependencies and ensure generated code headers do not introduce conflicting terms.
+
+---
+
 ## 🧱 Summary of Responsibilities
 
 | Layer | Responsibility |

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache Pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.dartServer
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Flutter analyze
+        run: flutter analyze
+
+      - name: Dart analyze
+        run: dart analyze
+
+      - name: Generate code
+        run: dart run build_runner build -d
+
+      - name: Generator unit tests
+        run: dart test test/generator_test.dart
+
+      - name: Flutter widget tests
+        run: flutter test --reporter expanded test/runtime_test.dart
+
+      - name: Pana score
+        run: dart run pana --no-warning
+
+      - name: Publish dry run
+        run: flutter pub publish --dry-run

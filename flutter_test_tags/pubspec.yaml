@@ -1,0 +1,35 @@
+name: flutter_test_tags
+description: >
+  Compile-time helpers that expose Selenium-friendly semantics for Flutter Web and Widget tests.
+version: 0.2.0
+homepage: https://github.com/WCallahan/semantic_gen
+repository: https://github.com/WCallahan/semantic_gen
+issue_tracker: https://github.com/WCallahan/semantic_gen/issues
+documentation: https://github.com/WCallahan/semantic_gen#readme
+topics:
+  - testing
+  - selenium
+  - source-gen
+  - accessibility
+  - web
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.27.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.16.0
+  source_gen: ^4.0.0
+  analyzer: ^7.7.1
+  collection: ^1.19.1
+  build: ^3.1.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: ^1.26.2
+  build_runner: ^2.7.1
+  build_test: ^3.3.3
+  flutter_lints: ^5.0.0
+  pana: ^0.22.21
+flutter:
+  uses-material-design: true

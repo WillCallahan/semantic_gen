@@ -1,0 +1,80 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to publish (e.g. v0.2.0)"
+        required: true
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Validate input tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ ! "${{ inputs.tag }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "Tag must be semantic version prefixed with v (e.g. v1.2.3)" >&2
+            exit 1
+          fi
+
+      - name: Checkout requested ref
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch --tags --force
+          git checkout ${{ inputs.tag }}
+
+      - name: Checkout release tag
+        if: github.event_name == 'release'
+        run: |
+          git fetch --tags --force
+          git checkout ${{ github.event.release.tag_name }}
+
+      - name: Cache Pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.dartServer
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Pre-publish checks
+        run: |
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze
+          dart analyze
+          dart run build_runner build -d
+          dart test test/generator_test.dart
+          flutter test --reporter expanded test/runtime_test.dart
+          dart run pana --no-warning
+          flutter pub publish --dry-run
+
+      - name: Configure pub credentials
+        run: |
+          mkdir -p ~/.pub-cache
+          echo "${{ secrets.PUB_CREDENTIALS }}" > ~/.pub-cache/credentials.json
+          chmod 600 ~/.pub-cache/credentials.json
+        shell: bash
+
+      - name: Publish to pub.dev
+        env:
+          PUB_ALLOW_PRERELEASE_SDK: "true"
+        run: flutter pub publish --force

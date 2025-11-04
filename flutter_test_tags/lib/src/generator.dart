@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/element/element2.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
@@ -74,13 +73,10 @@ class AutoTagGenerator extends Generator {
 
     final wrappers = _collectWrappers(library);
 
-    if (wrappers.isEmpty) {
-      buffer.writeln(
-        '// No AutoTag wrappers generated. '
-        'Add @AutoTag or @AutoWrapWidgets annotations to opt-in.',
-      );
-      return buffer.toString();
-    }
+    assert(
+      wrappers.isNotEmpty,
+      'AutoTagGenerator expected at least one wrapper.',
+    );
 
     for (final wrapper in wrappers) {
       buffer
@@ -117,12 +113,6 @@ class AutoTagGenerator extends Generator {
         continue;
       }
 
-      final sanitized = _sanitizeIdentifier(classElement.displayName);
-      if (sanitized == null) {
-        log.warning('Skipping unsupported class ${classElement.displayName}');
-        continue;
-      }
-
       final autoTagReader = ConstantReader(autoTagAnnotation);
       final namespace = autoTagReader.peek('namespace')?.stringValue;
       final testIdAnnotation =
@@ -132,11 +122,10 @@ class AutoTagGenerator extends Generator {
       final testId = testIdReader?.peek('value')?.stringValue;
 
       descriptors.add(
-        AutoTagClassDescriptor(
-          name: sanitized,
-          namespace:
-              (namespace != null && namespace.isNotEmpty) ? namespace : null,
-          testId: (testId != null && testId.isNotEmpty) ? testId : null,
+        descriptorFromMetadata(
+          className: classElement.displayName,
+          namespace: namespace,
+          testId: testId,
           isButton: _looksLikeButton(classElement),
           isTextField: _looksLikeTextField(classElement),
         ),
@@ -250,43 +239,106 @@ class AutoTagGenerator extends Generator {
       if (widgetTypes == null || !widgetTypes.isList) {
         continue;
       }
-      for (final entry in widgetTypes.listValue) {
-        final reader = ConstantReader(entry);
-        if (reader.isString) {
-          yield reader.stringValue;
-        }
+      yield* widgetNamesFromStrings(
+        widgetTypes.listValue.map((entry) => entry.toStringValue()),
+      );
+    }
+  }
+
+  @visibleForTesting
+  Iterable<String> libraryWidgetNamesForTesting(LibraryReader library) =>
+      _libraryWidgetNames(library);
+
+  @visibleForTesting
+  static Iterable<String> widgetNamesFromStrings(
+    Iterable<String?> values,
+  ) sync* {
+    for (final value in values) {
+      if (value != null && value.isNotEmpty) {
+        yield value;
       }
     }
   }
 
-  static bool _looksLikeButton(InterfaceElement2 element) {
-    if (element.displayName.toLowerCase().contains('button')) {
-      return true;
-    }
-    return element.allSupertypes.any(_isButtonInterface);
+  @visibleForTesting
+  AutoTagClassDescriptor descriptorFromMetadata({
+    required String className,
+    String? namespace,
+    String? testId,
+    required bool isButton,
+    required bool isTextField,
+  }) {
+    final sanitizedName =
+        _sanitizeIdentifier(className) ?? className;
+    final normalizedNamespace =
+        (namespace != null && namespace.isNotEmpty) ? namespace : null;
+    final normalizedTestId =
+        (testId != null && testId.isNotEmpty) ? testId : null;
+
+    return AutoTagClassDescriptor(
+      name: sanitizedName,
+      namespace: normalizedNamespace,
+      testId: normalizedTestId,
+      isButton: isButton,
+      isTextField: isTextField,
+    );
   }
 
-  static bool _isButtonInterface(InterfaceType type) {
-    final lower = type.element3.displayName.toLowerCase();
-    return lower.contains('button');
+  static bool _looksLikeButton(InterfaceElement2 element) {
+    return inferButtonFlag(
+      name: element.displayName,
+      superTypes:
+          element.allSupertypes.map((type) => type.element3.displayName),
+    );
   }
 
   static bool _looksLikeTextField(InterfaceElement2 element) {
-    final lower = element.displayName.toLowerCase();
+    return inferTextFieldFlag(
+      name: element.displayName,
+      superTypes:
+          element.allSupertypes.map((type) => type.element3.displayName),
+    );
+  }
+
+  /// Heuristic used by tests and the generator to detect button-like widgets.
+  @visibleForTesting
+  static bool inferButtonFlag({
+    required String name,
+    Iterable<String> superTypes = const <String>[],
+  }) {
+    final lower = name.toLowerCase();
+    if (lower.contains('button')) {
+      return true;
+    }
+    return superTypes.any(
+      (candidate) => candidate.toLowerCase().contains('button'),
+    );
+  }
+
+  /// Heuristic used by tests and the generator to detect text-field widgets.
+  @visibleForTesting
+  static bool inferTextFieldFlag({
+    required String name,
+    Iterable<String> superTypes = const <String>[],
+  }) {
+    final lower = name.toLowerCase();
     if (lower.contains('textfield') || lower.contains('editor')) {
       return true;
     }
-    return element.allSupertypes.any(_isEditableInterface);
+    return superTypes.any((candidate) {
+      final value = candidate.toLowerCase();
+      return value.contains('textfield') ||
+          value.contains('formfield') ||
+          value.contains('editable');
+    });
   }
 
-  static bool _isEditableInterface(InterfaceType type) {
-    final lower = type.element3.displayName.toLowerCase();
-    return lower.contains('textfield') ||
-        lower.contains('formfield') ||
-        lower.contains('editable');
-  }
+  /// Validates whether [value] can be used as a Dart identifier.
+  @visibleForTesting
+  static bool isValidIdentifier(String value) =>
+      _sanitizeIdentifier(value) != null;
 
-  String? _sanitizeIdentifier(String value) {
+  static String? _sanitizeIdentifier(String value) {
     final match = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
     return match.hasMatch(value) ? value : null;
   }

@@ -1,8 +1,8 @@
-library flutter_test_tags;
+library semantic_gen;
 
 import 'package:flutter/material.dart';
 
 export 'src/annotations.dart';
 export 'src/runtime.dart';
 
-part 'flutter_test_tags.tagged.g.dart';
+part 'semantic_gen.tagged.g.dart';

@@ -50,13 +50,13 @@ class AutoTagGenerator extends Generator {
   };
 
   static const TypeChecker _autoTagChecker = TypeChecker.fromUrl(
-    'package:flutter_test_tags/src/annotations.dart#AutoTag',
+    'package:semantic_gen/src/annotations.dart#AutoTag',
   );
   static const TypeChecker _testIdChecker = TypeChecker.fromUrl(
-    'package:flutter_test_tags/src/annotations.dart#TestId',
+    'package:semantic_gen/src/annotations.dart#TestId',
   );
   static const TypeChecker _autoWrapChecker = TypeChecker.fromUrl(
-    'package:flutter_test_tags/src/annotations.dart#AutoWrapWidgets',
+    'package:semantic_gen/src/annotations.dart#AutoWrapWidgets',
   );
 
   @override

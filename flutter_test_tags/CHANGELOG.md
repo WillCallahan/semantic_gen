@@ -1,3 +1,7 @@
+## Unreleased
+
+- Renames the package to `semantic_gen` and updates library entry points and examples.
+
 # 0.2.0
 
 - Initial release of `flutter_test_tags`.

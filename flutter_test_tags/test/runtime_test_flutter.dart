@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_test_tags/flutter_test_tags.dart';
+import 'package:semantic_gen/semantic_gen.dart';
 
 void runRuntimeTests() {
   testWidgets('testTag wraps child with semantics metadata', (tester) async {

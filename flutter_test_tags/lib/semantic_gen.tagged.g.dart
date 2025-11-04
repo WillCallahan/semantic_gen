@@ -1,7 +1,7 @@
 // GENERATED STUB: run `dart run build_runner build -d` to regenerate.
-// The real output is produced by the flutter_test_tags generator.
+// The real output is produced by the semantic_gen generator.
 
-part of 'flutter_test_tags.dart';
+part of 'semantic_gen.dart';
 
 /// Placeholder wrapper for [Text] widgets prior to code generation.
 class TextTagged extends StatelessWidget {

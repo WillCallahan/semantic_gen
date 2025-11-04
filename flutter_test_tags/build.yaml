@@ -1,13 +1,13 @@
 targets:
   $default:
     builders:
-      flutter_test_tags:auto_tag_builder:
+      semantic_gen:auto_tag_builder:
         generate_for:
           - lib/**.dart
 
 builders:
   auto_tag_builder:
-    import: "package:flutter_test_tags/src/builder.dart"
+    import: "package:semantic_gen/src/builder.dart"
     builder_factories: ["autoTagBuilder"]
     build_extensions: {".dart": [".tagged.g.dart"]}
     auto_apply: dependents

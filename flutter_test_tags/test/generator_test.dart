@@ -1,4 +1,4 @@
-import 'package:flutter_test_tags/src/generator.dart';
+import 'package:semantic_gen/src/generator.dart';
 import 'package:test/test.dart';
 
 const bool _isFlutterTest = bool.fromEnvironment('dart.library.ui');

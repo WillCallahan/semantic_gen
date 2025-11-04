@@ -1,8 +1,8 @@
 @AutoWrapWidgets(['ElevatedButton', 'DropdownButton'])
-library flutter_test_tags_example;
+library semantic_gen_example;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_test_tags/flutter_test_tags.dart';
+import 'package:semantic_gen/semantic_gen.dart';
 
 part 'main.tagged.g.dart';
 
@@ -10,7 +10,7 @@ void main() {
   runApp(const ExampleApp());
 }
 
-/// Demo application showcasing flutter_test_tags integration.
+/// Demo application showcasing semantic_gen integration.
 class ExampleApp extends StatelessWidget {
   /// Creates an [ExampleApp].
   const ExampleApp({super.key});
@@ -18,10 +18,10 @@ class ExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'flutter_test_tags demo',
+      title: 'semantic_gen demo',
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('flutter_test_tags demo'),
+          title: const Text('semantic_gen demo'),
         ),
         body: const Padding(
           padding: EdgeInsets.all(24),

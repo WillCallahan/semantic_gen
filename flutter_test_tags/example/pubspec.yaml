@@ -1,5 +1,5 @@
-name: flutter_test_tags_example
-description: Example app demonstrating flutter_test_tags integration.
+name: semantic_gen_example
+description: Example app demonstrating semantic_gen integration.
 publish_to: "none"
 version: 0.2.0+1
 environment:
@@ -8,7 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_test_tags:
+  semantic_gen:
     path: ../
 dev_dependencies:
   flutter_test:

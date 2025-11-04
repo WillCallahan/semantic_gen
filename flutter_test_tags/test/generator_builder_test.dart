@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:flutter_test_tags/src/builder.dart';
+import 'package:semantic_gen/src/builder.dart';
 import 'package:test/test.dart';
 
 const bool _isFlutterTest = bool.fromEnvironment('dart.library.ui');
@@ -18,7 +18,7 @@ void main() {
 library sample;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_test_tags/flutter_test_tags.dart';
+import 'package:semantic_gen/semantic_gen.dart';
 
 part 'sample.tagged.g.dart';
 
@@ -32,15 +32,15 @@ class ProfileHeader extends StatelessWidget {
 ''';
 
       final packageAssets = _packageSourceAssets();
-      final writer = TestReaderWriter(rootPackage: 'flutter_test_tags');
+      final writer = TestReaderWriter(rootPackage: 'semantic_gen');
       final result = await testBuilder(
         autoTagBuilder(BuilderOptions(const <String, Object?>{})),
         {
           ...packageAssets,
-          'flutter_test_tags|lib/sample.dart': input,
+          'semantic_gen|lib/sample.dart': input,
           'flutter|lib/widgets.dart': _flutterWidgetsStub,
         },
-        rootPackage: 'flutter_test_tags',
+        rootPackage: 'semantic_gen',
         readerWriter: writer,
       );
 
@@ -48,7 +48,7 @@ class ProfileHeader extends StatelessWidget {
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
         outputPaths.any(
-          (path) => path.contains('sample.flutter_test_tags.g.part'),
+          (path) => path.contains('sample.semantic_gen.g.part'),
         ),
         isTrue,
         reason: 'outputs: $outputPaths',
@@ -61,7 +61,7 @@ class ProfileHeader extends StatelessWidget {
 library sample;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_test_tags/flutter_test_tags.dart';
+import 'package:semantic_gen/semantic_gen.dart';
 
 part 'sample.tagged.g.dart';
 
@@ -74,15 +74,15 @@ class Demo extends StatelessWidget {
 ''';
 
       final packageAssets = _packageSourceAssets();
-      final writer = TestReaderWriter(rootPackage: 'flutter_test_tags');
+      final writer = TestReaderWriter(rootPackage: 'semantic_gen');
       final result = await testBuilder(
         autoTagBuilder(BuilderOptions(const <String, Object?>{})),
         {
           ...packageAssets,
-          'flutter_test_tags|lib/sample.dart': input,
+          'semantic_gen|lib/sample.dart': input,
           'flutter|lib/widgets.dart': _flutterWidgetsStub,
         },
-        rootPackage: 'flutter_test_tags',
+        rootPackage: 'semantic_gen',
         readerWriter: writer,
       );
 
@@ -90,7 +90,7 @@ class Demo extends StatelessWidget {
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
         outputPaths.any(
-          (path) => path.contains('sample.flutter_test_tags.g.part'),
+          (path) => path.contains('sample.semantic_gen.g.part'),
         ),
         isTrue,
         reason: 'outputs: $outputPaths',
@@ -143,13 +143,13 @@ Map<String, String> _packageSourceAssets() {
       File(relativePath).readAsStringSync();
 
   return <String, String>{
-    'flutter_test_tags|lib/flutter_test_tags.dart':
-        read('lib/flutter_test_tags.dart'),
-    'flutter_test_tags|lib/flutter_test_tags.tagged.g.dart':
-        read('lib/flutter_test_tags.tagged.g.dart'),
-    'flutter_test_tags|lib/src/annotations.dart':
+    'semantic_gen|lib/semantic_gen.dart':
+        read('lib/semantic_gen.dart'),
+    'semantic_gen|lib/semantic_gen.tagged.g.dart':
+        read('lib/semantic_gen.tagged.g.dart'),
+    'semantic_gen|lib/src/annotations.dart':
         read('lib/src/annotations.dart'),
-    'flutter_test_tags|lib/src/runtime.dart':
+    'semantic_gen|lib/src/runtime.dart':
         read('lib/src/runtime.dart'),
   };
 }

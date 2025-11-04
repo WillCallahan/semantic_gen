@@ -8,6 +8,6 @@ Builder autoTagBuilder(BuilderOptions options) {
   final generatorOptions = AutoTagGenerator.parseConfig(options.config);
   return SharedPartBuilder(
     [AutoTagGenerator(generatorOptions)],
-    'flutter_test_tags',
+    'semantic_gen',
   );
 }

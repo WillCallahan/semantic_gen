@@ -1,6 +1,6 @@
-# flutter_test_tags
+# semantic_gen
 
-`flutter_test_tags` delivers Selenium-friendly semantics for Flutter Web by wrapping widgets with predictable accessibility labels at build time. Use annotations or configuration to opt in, and let the code generator produce the glue that Selenium (or any DOM-driven test harness) needs.
+`semantic_gen` delivers Selenium-friendly semantics for Flutter Web by wrapping widgets with predictable accessibility labels at build time. Use annotations or configuration to opt in, and let the code generator produce the glue that Selenium (or any DOM-driven test harness) needs.
 
 ---
 
@@ -10,7 +10,7 @@ Add the dependency to your Flutter package:
 
 ```yaml
 dependencies:
-  flutter_test_tags: ^0.2.0
+  semantic_gen: ^0.2.0
 
 dev_dependencies:
   build_runner: ^2.4.0
@@ -25,7 +25,7 @@ dart run build_runner build -d
 ```
 
 ```dart
-import 'package:flutter_test_tags/flutter_test_tags.dart';
+import 'package:semantic_gen/semantic_gen.dart';
 
 part 'home.tagged.g.dart';
 

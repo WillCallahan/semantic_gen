@@ -130,7 +130,7 @@ loginButton.click();
 | Format | `dart format .` |
 | Analyze | `flutter analyze && dart analyze` |
 | Generate code | `dart run build_runner build -d` |
-| Run tests | `dart test vm_test && flutter test test/runtime_test.dart` |
+| Run tests | `dart test test/vm && flutter test test/runtime_test.dart` |
 | Quality gate | `pana .` |
 | Toggle semantics | `semantic_gen.yaml: enabled: false` (or override in `build.yaml`) |
 
@@ -145,7 +145,7 @@ Update `semantic_gen.yaml` or the builder options in `build.yaml` whenever you n
 3. Make changes, keeping lint warnings at zero (`flutter analyze`).
 4. Regenerate code and tests as needed.
 5. Update `README.md`, `CHANGELOG.md`, and docs when APIs change.
-6. Run the full test suite (`dart test vm_test` and `flutter test test/runtime_test.dart`) and ensure `pana .` reports no actionable issues.
+6. Run the full test suite (`dart test test/vm` and `flutter test test/runtime_test.dart`) and ensure `pana .` reports no actionable issues.
 
 Submit a PR with a descriptive title, linked issue (if applicable), and screenshots or logs for visual changes.
 
@@ -156,7 +156,7 @@ Submit a PR with a descriptive title, linked issue (if applicable), and screensh
 - Update `pubspec.yaml` version and keep `CHANGELOG.md` in sync.
 - Verify documentation: `dart doc` and README sections.
 - Refresh screenshots/GIFs referenced in the README.
-- Run `dart format`, `flutter analyze`, `dart test vm_test`, `flutter test test/runtime_test.dart`, and `pana .`.
+- Run `dart format`, `flutter analyze`, `dart test test/vm`, `flutter test test/runtime_test.dart`, and `pana .`.
 - Execute `flutter pub publish --dry-run` and record the output in CI artifacts.
 - Tag the release (`git tag v<version>`) before publishing.
 - Trigger the `Publish` GitHub Action with the new tag once checks pass (requires `PUB_CREDENTIALS` secret).

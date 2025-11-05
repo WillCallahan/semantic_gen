@@ -1,3 +1,4 @@
+@TestOn('vm')
 import 'package:semantic_gen/src/generator.dart';
 import 'package:test/test.dart';
 

@@ -1,28 +1,37 @@
 # semantic_gen
 
-`semantic_gen` delivers Selenium-friendly semantics for Flutter Web by wrapping widgets with predictable accessibility labels at build time. Use annotations or configuration to opt in, and let the code generator produce the glue that Selenium (or any DOM-driven test harness) needs.
+`semantic_gen` generates deterministic semantics wrappers for Flutter widgets so Selenium and other DOM-driven tools can discover them by stable labels. Annotate the widgets you care about (or configure the generator globally) and let build_runner create the wrappers at compile time.
 
 ---
 
 ## 🚀 Quick Start
 
-Add the dependency to your Flutter package:
+1. Add the dependency to your Flutter package:
 
-```yaml
-dependencies:
-  semantic_gen: ^0.2.0
+   ```yaml
+   dependencies:
+     semantic_gen: ^0.2.0
 
-dev_dependencies:
-  build_runner: ^2.4.0
-```
+   dev_dependencies:
+     build_runner: ^2.4.0
+   ```
 
-Create a library with a `part` directive, opt into wrapping, then trigger code
-generation:
+2. (Optional) Drop a `semantic_gen.yaml` next to your `pubspec.yaml` to tweak behaviour:
 
-```bash
-flutter pub get
-dart run build_runner build -d
-```
+   ```yaml
+   enabled: true        # flip to false to turn the generator off
+   prefix: test
+   auto_wrap_widgets:
+     - ElevatedButton
+   ```
+
+3. Create a library with a `part` directive, opt into wrapping, then trigger code
+   generation:
+
+   ```bash
+   flutter pub get
+   dart run build_runner build -d
+   ```
 
 ```dart
 import 'package:semantic_gen/semantic_gen.dart';
@@ -43,6 +52,44 @@ class LoginButton extends StatelessWidget {
 
 The generator produces wrappers such as `LoginButtonTagged` and `TextTagged`
 that expose labels like `test:login:LoginButton`, making them Selenium-friendly.
+
+---
+
+## 🧩 Configuration
+
+`semantic_gen` reads options from `build.yaml` first, then from an optional `semantic_gen.yaml` file that lives next to your `pubspec.yaml`. If neither provides a value, sensible defaults are used.
+
+- `enabled` (bool): set to `false` to disable wrapper generation without touching your source code.
+- `prefix` (string): customise the leading segment of every generated semantics label (defaults to `test`).
+- `auto_wrap_widgets` (list of strings): additional widget class names that should always receive wrappers.
+
+To relocate the config file, specify `config_path` in `build.yaml`:
+
+```yaml
+targets:
+  $default:
+    builders:
+      semantic_gen:auto_tag_builder:
+        options:
+          config_path: tool/semantic_gen.yaml
+        generate_for:
+          - lib/**.dart
+```
+
+You can also enforce options directly in `build.yaml` (overriding anything in `semantic_gen.yaml`):
+
+```yaml
+targets:
+  $default:
+    builders:
+      semantic_gen:auto_tag_builder:
+        options:
+          enabled: false
+          prefix: qa
+          auto_wrap_widgets:
+            - ElevatedButton
+            - FilledButton
+```
 
 ---
 
@@ -76,17 +123,18 @@ loginButton.click();
 
 ---
 
-## ⚙️ Configuration Cheatsheet
+## 🛠️ Developer Workflow
 
-| Task | Command |
-|------|---------|
+| Task | How |
+|------|-----|
 | Format | `dart format .` |
 | Analyze | `flutter analyze && dart analyze` |
 | Generate code | `dart run build_runner build -d` |
 | Run tests | `dart test vm_test && flutter test test/runtime_test.dart` |
 | Quality gate | `pana .` |
+| Toggle semantics | `semantic_gen.yaml: enabled: false` (or override in `build.yaml`) |
 
-Customize the generator by editing `build.yaml`, adding `auto_wrap_widgets`, and re-running `build_runner`.
+Update `semantic_gen.yaml` or the builder options in `build.yaml` whenever you need to change prefixes, toggle coverage, or temporarily disable generation.
 
 ---
 

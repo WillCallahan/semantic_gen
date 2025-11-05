@@ -12,7 +12,7 @@ void main() {
     late AutoTagGenerator generator;
 
     setUp(() {
-      generator = const AutoTagGenerator(GeneratorOptions());
+      generator = AutoTagGenerator(const GeneratorOptions());
     });
 
     test('includes defaults and annotated classes', () {

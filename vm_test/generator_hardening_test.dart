@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 void main() {
   group('AutoTagGenerator coverage', () {
     test('defaults produce wrappers when library has no annotations', () {
-      final generator = const AutoTagGenerator(GeneratorOptions());
+      final generator = AutoTagGenerator(const GeneratorOptions());
       final wrappers = generator.collectWrappersForTesting();
 
       expect(wrappers, isNotEmpty);
@@ -14,7 +14,7 @@ void main() {
     });
 
     test('sanitizes invalid identifiers and logs warning', () {
-      final generator = const AutoTagGenerator(GeneratorOptions());
+      final generator = AutoTagGenerator(const GeneratorOptions());
       final wrappers = generator.collectWrappersForTesting(
         libraryWidgetNames: const ['ValidName', 'Invalid Name', '1NotAnIdentifier'],
       );
@@ -24,7 +24,7 @@ void main() {
     });
 
     test('merges descriptors respecting testId overrides and flags', () {
-      final generator = const AutoTagGenerator(GeneratorOptions(prefix: 'qa'));
+      final generator = AutoTagGenerator(const GeneratorOptions(prefix: 'qa'));
       final wrappers = generator.collectWrappersForTesting(
         classDescriptors: [
           generator.describeClassForTest(
@@ -61,7 +61,7 @@ void main() {
     });
 
     test('descriptorFromMetadata normalizes optional values', () {
-      final generator = const AutoTagGenerator(GeneratorOptions());
+      final generator = AutoTagGenerator(const GeneratorOptions());
       final descriptor = generator.descriptorFromMetadata(
         className: 'CheckoutButton',
         namespace: '',

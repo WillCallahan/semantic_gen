@@ -3,6 +3,7 @@ import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
+import 'package:yaml/yaml.dart';
 
 /// Configuration values that control the behaviour of [AutoTagGenerator].
 class GeneratorOptions {
@@ -10,6 +11,8 @@ class GeneratorOptions {
   const GeneratorOptions({
     this.globalWidgets = const <String>[],
     this.prefix = 'test',
+    this.enabled = true,
+    this.configPath,
   });
 
   /// Additional widget type names that should always be wrapped.
@@ -17,17 +20,58 @@ class GeneratorOptions {
 
   /// Prefix applied to all generated semantics labels.
   final String prefix;
+
+  /// Whether code generation should be performed.
+  final bool enabled;
+
+  /// Optional configuration file path relative to the package root.
+  final String? configPath;
+
+  /// Builds a new instance applying [overrides] on top of the current values.
+  GeneratorOptions withOverrides(GeneratorConfigOverrides overrides) {
+    return GeneratorOptions(
+      globalWidgets: overrides.globalWidgets ?? globalWidgets,
+      prefix: overrides.prefix ?? prefix,
+      enabled: overrides.enabled ?? enabled,
+      configPath: configPath,
+    );
+  }
+}
+
+/// Partial configuration values provided by an external file.
+class GeneratorConfigOverrides {
+  /// Creates a overrides bag.
+  const GeneratorConfigOverrides({
+    this.globalWidgets,
+    this.prefix,
+    this.enabled,
+  });
+
+  /// Additional widget type names that should always be wrapped.
+  final List<String>? globalWidgets;
+
+  /// Prefix applied to all generated semantics labels.
+  final String? prefix;
+
+  /// Whether code generation should be performed.
+  final bool? enabled;
+
+  /// Whether the overrides bag is empty.
+  bool get isEmpty =>
+      globalWidgets == null && prefix == null && enabled == null;
 }
 
 /// Collects and emits wrappers that add deterministic semantics labels.
 class AutoTagGenerator extends Generator {
   /// Creates a new generator.
-  const AutoTagGenerator(this.options);
+  AutoTagGenerator(GeneratorOptions options) : _baseOptions = options;
 
   /// Attempts to parse build configuration into a [GeneratorOptions] instance.
   static GeneratorOptions parseConfig(Map<String, dynamic> config) {
     final widgetsValue = config['auto_wrap_widgets'];
     final prefixValue = config['prefix'];
+    final enabledValue = config['enabled'];
+    final configPathValue = config['config_path'];
 
     return GeneratorOptions(
       globalWidgets: widgetsValue is Iterable
@@ -36,11 +80,19 @@ class AutoTagGenerator extends Generator {
       prefix: prefixValue is String && prefixValue.isNotEmpty
           ? prefixValue
           : 'test',
+      enabled: enabledValue is bool ? enabledValue : true,
+      configPath: configPathValue is String && configPathValue.isNotEmpty
+          ? configPathValue
+          : 'semantic_gen.yaml',
     );
   }
 
   /// Options supplied to this generator.
-  final GeneratorOptions options;
+  GeneratorOptions get options => _baseOptions;
+  final GeneratorOptions _baseOptions;
+
+  GeneratorOptions? _resolvedOptionsCache;
+  bool _triedResolvingOptions = false;
 
   static const Set<String> _defaultWidgets = <String>{
     'Text',
@@ -64,19 +116,22 @@ class AutoTagGenerator extends Generator {
     LibraryReader library,
     BuildStep buildStep,
   ) async {
-    final buffer = StringBuffer()
-      ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND.')
-      ..writeln('// coverage:ignore-file')
-      ..writeln('// ignore_for_file: type=lint')
-      ..writeln("part of '${buildStep.inputId.pathSegments.last}';")
-      ..writeln();
+    final effectiveOptions = await _effectiveOptions(buildStep);
+    final buffer = _createBuffer(buildStep);
 
-    final wrappers = _collectWrappers(library);
+    if (!effectiveOptions.enabled) {
+      buffer.writeln('// semantic_gen disabled via configuration.');
+      return buffer.toString();
+    }
 
-    assert(
-      wrappers.isNotEmpty,
-      'AutoTagGenerator expected at least one wrapper.',
-    );
+    final wrappers = _collectWrappers(library, effectiveOptions);
+
+    if (wrappers.isEmpty) {
+      log.fine(
+        'semantic_gen: no wrappers to emit for ${buildStep.inputId.path}.',
+      );
+      return buffer.toString();
+    }
 
     for (final wrapper in wrappers) {
       buffer
@@ -104,7 +159,118 @@ class AutoTagGenerator extends Generator {
     return buffer.toString();
   }
 
-  List<_WrapperSpec> _collectWrappers(LibraryReader library) {
+  Future<GeneratorOptions> _effectiveOptions(BuildStep buildStep) async {
+    if (_resolvedOptionsCache != null) {
+      return _resolvedOptionsCache!;
+    }
+    if (_triedResolvingOptions) {
+      return _baseOptions;
+    }
+    _triedResolvingOptions = true;
+
+    final overrides = await _loadOverrides(buildStep);
+    if (overrides != null && !overrides.isEmpty) {
+      _resolvedOptionsCache = _baseOptions.withOverrides(overrides);
+    } else {
+      _resolvedOptionsCache = _baseOptions;
+    }
+    return _resolvedOptionsCache!;
+  }
+
+  Future<GeneratorConfigOverrides?> _loadOverrides(
+    BuildStep buildStep,
+  ) async {
+    final configPath = _baseOptions.configPath;
+    if (configPath == null || configPath.isEmpty) {
+      return null;
+    }
+
+    final assetId = AssetId(buildStep.inputId.package, configPath);
+    try {
+      final yamlContent = await buildStep.readAsString(assetId);
+      final raw = loadYaml(yamlContent);
+      if (raw == null) {
+        return const GeneratorConfigOverrides();
+      }
+      if (raw is! YamlMap) {
+        log.warning(
+          'semantic_gen: expected $configPath to contain a YAML map. Ignoring.',
+        );
+        return const GeneratorConfigOverrides();
+      }
+      return _parseOverrides(raw);
+    } on AssetNotFoundException {
+      return null;
+    } catch (error, stackTrace) {
+      log.severe(
+        'semantic_gen: failed to load $configPath',
+        error,
+        stackTrace,
+      );
+      return null;
+    }
+  }
+
+  static GeneratorConfigOverrides _parseOverrides(YamlMap yaml) {
+    final prefixRaw = yaml['prefix'];
+    return GeneratorConfigOverrides(
+      globalWidgets: _stringList(yaml['auto_wrap_widgets']),
+      prefix: prefixRaw is String && prefixRaw.isNotEmpty
+          ? prefixRaw
+          : prefixRaw != null && prefixRaw.toString().isNotEmpty
+              ? prefixRaw.toString()
+              : null,
+      enabled: _boolValue(yaml['enabled']),
+    );
+  }
+
+  static List<String>? _stringList(dynamic value) {
+    if (value is Iterable) {
+      final result = <String>[];
+      for (final entry in value) {
+        final raw = entry?.toString();
+        if (raw == null) {
+          continue;
+        }
+        final candidate = raw.trim();
+        if (candidate.isNotEmpty) {
+          result.add(candidate);
+        }
+      }
+      return result;
+    }
+    return null;
+  }
+
+  static bool? _boolValue(dynamic value) {
+    if (value is bool) {
+      return value;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true') {
+        return true;
+      }
+      if (normalized == 'false') {
+        return false;
+      }
+    }
+    return null;
+  }
+
+  StringBuffer _createBuffer(BuildStep buildStep) {
+    return StringBuffer()
+      ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND.')
+      ..writeln('// coverage:ignore-file')
+      ..writeln('// ignore_for_file: type=lint')
+      ..writeln("part of '${buildStep.inputId.pathSegments.last}';")
+      ..writeln();
+  }
+
+  List<_WrapperSpec> _collectWrappers(
+    LibraryReader library,
+    GeneratorOptions options,
+  ) {
     final descriptors = <AutoTagClassDescriptor>[];
 
     for (final classElement in library.classes) {
@@ -133,6 +299,7 @@ class AutoTagGenerator extends Generator {
     }
 
     return _buildWrappers(
+      options: options,
       classDescriptors: descriptors,
       libraryWidgetNames: _libraryWidgetNames(library),
     );
@@ -162,8 +329,10 @@ class AutoTagGenerator extends Generator {
     Iterable<AutoTagClassDescriptor> classDescriptors =
         const <AutoTagClassDescriptor>[],
     Iterable<String> libraryWidgetNames = const <String>[],
+    GeneratorOptions? optionsOverride,
   }) {
     final specs = _buildWrappers(
+      options: optionsOverride ?? _baseOptions,
       classDescriptors: classDescriptors,
       libraryWidgetNames: libraryWidgetNames,
     );
@@ -181,6 +350,7 @@ class AutoTagGenerator extends Generator {
   }
 
   List<_WrapperSpec> _buildWrappers({
+    required GeneratorOptions options,
     required Iterable<AutoTagClassDescriptor> classDescriptors,
     required Iterable<String> libraryWidgetNames,
   }) {
@@ -245,10 +415,12 @@ class AutoTagGenerator extends Generator {
     }
   }
 
+  /// Exposes [_libraryWidgetNames] for tests.
   @visibleForTesting
   Iterable<String> libraryWidgetNamesForTesting(LibraryReader library) =>
       _libraryWidgetNames(library);
 
+  /// Normalises widget names coming from configuration sources.
   @visibleForTesting
   static Iterable<String> widgetNamesFromStrings(
     Iterable<String?> values,
@@ -260,6 +432,7 @@ class AutoTagGenerator extends Generator {
     }
   }
 
+  /// Builds a descriptor from analyzer metadata for use in tests.
   @visibleForTesting
   AutoTagClassDescriptor descriptorFromMetadata({
     required String className,

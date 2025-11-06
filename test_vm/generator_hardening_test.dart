@@ -9,17 +9,28 @@ void main() {
       final wrappers = generator.collectWrappersForTesting();
 
       expect(wrappers, isNotEmpty);
-      expect(wrappers.map((wrapper) => wrapper.wrapperName),
-          containsAll(<String>['TextTagged', 'SelectableTextTagged', 'TextFieldTagged', 'TextFormFieldTagged']));
+      expect(
+          wrappers.map((wrapper) => wrapper.wrapperName),
+          containsAll(<String>[
+            'TextTagged',
+            'SelectableTextTagged',
+            'TextFieldTagged',
+            'TextFormFieldTagged'
+          ]));
     });
 
     test('sanitizes invalid identifiers and logs warning', () {
       final generator = AutoTagGenerator(const GeneratorOptions());
       final wrappers = generator.collectWrappersForTesting(
-        libraryWidgetNames: const ['ValidName', 'Invalid Name', '1NotAnIdentifier'],
+        libraryWidgetNames: const [
+          'ValidName',
+          'Invalid Name',
+          '1NotAnIdentifier'
+        ],
       );
 
-      expect(wrappers.map((wrapper) => wrapper.wrapperName), contains('ValidNameTagged'));
+      expect(wrappers.map((wrapper) => wrapper.wrapperName),
+          contains('ValidNameTagged'));
       expect(wrappers, isNot(contains('Invalid NameTagged')));
     });
 
@@ -41,12 +52,14 @@ void main() {
         ],
       );
 
-      final button = wrappers.singleWhere((wrapper) => wrapper.wrapperName == 'CheckoutButtonTagged');
+      final button = wrappers.singleWhere(
+          (wrapper) => wrapper.wrapperName == 'CheckoutButtonTagged');
       expect(button.semanticsLabel, 'qa:checkout-button');
       expect(button.button, isTrue);
       expect(button.textField, isFalse);
 
-      final field = wrappers.singleWhere((wrapper) => wrapper.wrapperName == 'SearchFieldTagged');
+      final field = wrappers
+          .singleWhere((wrapper) => wrapper.wrapperName == 'SearchFieldTagged');
       expect(field.semanticsLabel, 'qa:forms:SearchField');
       expect(field.textField, isTrue);
     });

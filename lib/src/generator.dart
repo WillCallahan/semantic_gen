@@ -441,8 +441,7 @@ class AutoTagGenerator extends Generator {
     required bool isButton,
     required bool isTextField,
   }) {
-    final sanitizedName =
-        _sanitizeIdentifier(className) ?? className;
+    final sanitizedName = _sanitizeIdentifier(className) ?? className;
     final normalizedNamespace =
         (namespace != null && namespace.isNotEmpty) ? namespace : null;
     final normalizedTestId =

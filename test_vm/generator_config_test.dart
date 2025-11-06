@@ -48,7 +48,8 @@ void main() {
     });
 
     test('inferTextFieldFlag looks for text-field keywords', () {
-      expect(AutoTagGenerator.inferTextFieldFlag(name: 'BestTextField'), isTrue);
+      expect(
+          AutoTagGenerator.inferTextFieldFlag(name: 'BestTextField'), isTrue);
       expect(
         AutoTagGenerator.inferTextFieldFlag(
           name: 'RichEditor',

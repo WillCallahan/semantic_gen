@@ -139,17 +139,13 @@ class Semantics extends StatelessWidget {
 ''';
 
 Map<String, String> _packageSourceAssets() {
-  String read(String relativePath) =>
-      File(relativePath).readAsStringSync();
+  String read(String relativePath) => File(relativePath).readAsStringSync();
 
   return <String, String>{
-    'semantic_gen|lib/semantic_gen.dart':
-        read('lib/semantic_gen.dart'),
+    'semantic_gen|lib/semantic_gen.dart': read('lib/semantic_gen.dart'),
     'semantic_gen|lib/semantic_gen.tagged.g.dart':
         read('lib/semantic_gen.tagged.g.dart'),
-    'semantic_gen|lib/src/annotations.dart':
-        read('lib/src/annotations.dart'),
-    'semantic_gen|lib/src/runtime.dart':
-        read('lib/src/runtime.dart'),
+    'semantic_gen|lib/src/annotations.dart': read('lib/src/annotations.dart'),
+    'semantic_gen|lib/src/runtime.dart': read('lib/src/runtime.dart'),
   };
 }

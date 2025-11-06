@@ -6,6 +6,7 @@ pubspec.lock
 # Build outputs
 build/
 coverage/
+reports/
 
 # IntelliJ & VS Code
 .idea/

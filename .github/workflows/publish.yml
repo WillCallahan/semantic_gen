@@ -11,19 +11,22 @@ on:
       - published
 
 jobs:
-  publish:
+  checks:
+    name: quality-checks
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Restore | Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Restore | Install Flutter SDK
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Validate input tag
+      - name: Restore | Validate input tag
         if: github.event_name == 'workflow_dispatch'
         run: |
           if [[ ! "${{ inputs.tag }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
@@ -31,19 +34,19 @@ jobs:
             exit 1
           fi
 
-      - name: Checkout requested ref
+      - name: Restore | Checkout requested ref
         if: github.event_name == 'workflow_dispatch'
         run: |
           git fetch --tags --force
           git checkout ${{ inputs.tag }}
 
-      - name: Checkout release tag
+      - name: Restore | Checkout release tag
         if: github.event_name == 'release'
         run: |
           git fetch --tags --force
           git checkout ${{ github.event.release.tag_name }}
 
-      - name: Cache Pub packages
+      - name: Restore | Cache Pub packages
         uses: actions/cache@v4
         with:
           path: |
@@ -53,28 +56,128 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      - name: Install dependencies
+      - name: Restore | Fetch dependencies
         run: flutter pub get
 
-      - name: Pre-publish checks
-        run: |
-          dart format --output=none --set-exit-if-changed .
-          flutter analyze
-          dart analyze
-          dart run build_runner build -d
-          dart test
-          flutter test --reporter expanded test/runtime_test.dart
-          dart run pana --no-warning
-          flutter pub publish --dry-run
+      - name: Build | Prepare coverage directories
+        run: mkdir -p coverage/dart coverage/flutter reports
 
-      - name: Configure pub credentials
+      - name: Build | Generate code
+        run: dart run build_runner build -d
+
+      - name: Test | Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Test | Flutter analyze
+        run: |
+          set -o pipefail
+          flutter analyze | tee reports/flutter_analyze.txt
+
+      - name: Test | Dart analyze
+        run: |
+          set -o pipefail
+          dart analyze | tee reports/dart_analyze.txt
+
+      - name: Test | Dart unit tests with coverage
+        run: |
+          set -o pipefail
+          dart test --coverage=coverage/dart --reporter expanded | tee reports/dart_tests.txt
+
+      - name: Test | Convert dart coverage
+        run: |
+          dart run coverage:format_coverage \
+            --packages=.dart_tool/package_config.json \
+            --report-on=lib \
+            --in=coverage/dart/test \
+            --out=coverage/dart/lcov.info \
+            --lcov
+
+      - name: Test | Flutter widget tests with coverage
+        run: |
+          set -o pipefail
+          flutter test --reporter expanded --coverage --coverage-path coverage/flutter/lcov.info test/runtime_test.dart | tee reports/flutter_tests.txt
+
+      - name: Test | Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-coverage
+          path: coverage
+
+      - name: Test | Upload analysis and test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-reports
+          path: reports
+
+      - name: Test | Pana score
+        run: dart run pana --no-warning
+
+      - name: Publish | Dry run
+        run: flutter pub publish --dry-run
+
+  publish:
+    name: publish
+    needs: checks
+    if: >
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))) &&
+      needs.checks.result == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: pub-dev
+      url: https://pub.dev/packages/semantic_gen
+    steps:
+      - name: Restore | Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore | Install Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Restore | Validate input tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ ! "${{ inputs.tag }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "Tag must be semantic version prefixed with v (e.g. v1.2.3)" >&2
+            exit 1
+          fi
+
+      - name: Restore | Checkout requested ref
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch --tags --force
+          git checkout ${{ inputs.tag }}
+
+      - name: Restore | Checkout release tag
+        if: github.event_name == 'release'
+        run: |
+          git fetch --tags --force
+          git checkout ${{ github.event.release.tag_name }}
+
+      - name: Restore | Cache Pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.dartServer
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Restore | Fetch dependencies
+        run: flutter pub get
+
+      - name: Publish | Configure pub credentials
         run: |
           mkdir -p ~/.pub-cache
           echo "${{ secrets.PUB_CREDENTIALS }}" > ~/.pub-cache/credentials.json
           chmod 600 ~/.pub-cache/credentials.json
         shell: bash
 
-      - name: Publish to pub.dev
+      - name: Publish | Publish to pub.dev
         env:
           PUB_ALLOW_PRERELEASE_SDK: "true"
         run: flutter pub publish --force

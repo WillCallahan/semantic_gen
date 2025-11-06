@@ -29,23 +29,58 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare report directories
+        run: |
+          mkdir -p coverage/dart coverage/flutter reports
+
       - name: Format check
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Flutter analyze
-        run: flutter analyze
+        run: |
+          set -o pipefail
+          flutter analyze | tee reports/flutter_analyze.txt
 
       - name: Dart analyze
-        run: dart analyze
+        run: |
+          set -o pipefail
+          dart analyze | tee reports/dart_analyze.txt
 
       - name: Generate code
         run: dart run build_runner build -d
 
-      - name: Generator unit tests
-        run: dart test test/generator_test.dart
+      - name: Dart unit tests with coverage
+        run: |
+          set -o pipefail
+          dart test --coverage=coverage/dart --reporter expanded | tee reports/dart_tests.txt
 
-      - name: Flutter widget tests
-        run: flutter test --reporter expanded test/runtime_test.dart
+      - name: Convert dart coverage
+        run: |
+          dart run coverage:format_coverage \
+            --packages=.dart_tool/package_config.json \
+            --report-on=lib \
+            --in=coverage/dart/test \
+            --out=coverage/dart/lcov.info \
+            --lcov
+
+      - name: Flutter widget tests with coverage
+        run: |
+          set -o pipefail
+          flutter test --reporter expanded --coverage --coverage-path coverage/flutter/lcov.info test/runtime_test.dart | tee reports/flutter_tests.txt
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Upload analysis and test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports
 
       - name: Pana score
         run: dart run pana --no-warning

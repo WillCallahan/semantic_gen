@@ -1,5 +1,10 @@
 # semantic_gen
 
+[![CI](https://github.com/WillCallahan/semantic_gen/actions/workflows/ci.yml/badge.svg)](https://github.com/WillCallahan/semantic_gen/actions/workflows/ci.yml)
+[![Publish](https://github.com/WillCallahan/semantic_gen/actions/workflows/publish.yml/badge.svg)](https://github.com/WillCallahan/semantic_gen/actions/workflows/publish.yml)
+[![Pub](https://img.shields.io/pub/v/semantic_gen.svg)](https://pub.dev/packages/semantic_gen)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+
 `semantic_gen` generates deterministic semantics wrappers for Flutter widgets so Selenium and other DOM-driven tools can discover them by stable labels. Annotate the widgets you care about (or configure the generator globally) and let build_runner create the wrappers at compile time.
 
 ---
@@ -91,6 +96,32 @@ targets:
             - FilledButton
 ```
 
+### Environment-specific toggles
+
+Because code generation happens during the `build_runner` step (before your app runs), `--dart-define` values are not visible to `semantic_gen`. To turn the generator on only for select build pipelines, drive it via configuration files and `build_runner` overrides instead:
+
+1. Keep generation disabled by default in `semantic_gen.yaml`:
+
+   ```yaml
+   enabled: false
+   ```
+
+2. Create an environment-specific override (for example `semantic_gen.staging.yaml`) that flips the flag and tweaks any other options you need:
+
+   ```yaml
+   enabled: true
+   prefix: staging
+   ```
+
+3. In your staging build script, run:
+
+   ```bash
+   flutter pub run build_runner build --delete-conflicting-outputs \
+     --define semantic_gen:auto_tag_builder=config_path=semantic_gen.staging.yaml
+   ```
+
+Production builds can omit the `--define` (or point it at a different file), keeping wrappers disabled. This approach ensures only the desired environments emit the generated semantics wrappers.
+
 ---
 
 ## 🔖 Generated Wrappers & Annotations
@@ -130,7 +161,7 @@ loginButton.click();
 | Format | `dart format .` |
 | Analyze | `flutter analyze && dart analyze` |
 | Generate code | `dart run build_runner build -d` |
-| Run tests | `dart test test/vm && flutter test test/runtime_test.dart` |
+| Run tests | `dart test && flutter test test/runtime_test.dart` |
 | Quality gate | `pana .` |
 | Toggle semantics | `semantic_gen.yaml: enabled: false` (or override in `build.yaml`) |
 

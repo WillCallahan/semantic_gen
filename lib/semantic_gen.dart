@@ -1,5 +1,3 @@
-library semantic_gen;
-
 import 'package:flutter/material.dart';
 
 export 'src/annotations.dart';

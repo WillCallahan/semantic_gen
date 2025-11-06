@@ -1,4 +1,8 @@
+// ignore_for_file: unnecessary_library_name, invalid_use_of_visible_for_testing_member
+
 @TestOn('vm')
+library generator_builder_test;
+
 import 'dart:io';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';

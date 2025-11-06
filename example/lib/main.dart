@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_library_name
+
 @AutoWrapWidgets(['ElevatedButton', 'DropdownButton'])
 library semantic_gen_example;
 

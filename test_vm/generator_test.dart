@@ -1,4 +1,8 @@
+// ignore_for_file: unnecessary_library_name, invalid_use_of_visible_for_testing_member
+
 @TestOn('vm')
+library generator_test;
+
 import 'package:semantic_gen/src/generator.dart';
 import 'package:test/test.dart';
 

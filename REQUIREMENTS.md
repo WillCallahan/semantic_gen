@@ -116,7 +116,7 @@ This is used when manual tagging is required.
 name: flutter_test_tags
 description: >-
   Compile-time helpers to expose Selenium-friendly ARIA semantics in Flutter Web.
-version: 0.2.0
+version: 0.2.1
 environment:
   sdk: ">=3.5.0 <4.0.0"
   flutter: ">=3.27.0"

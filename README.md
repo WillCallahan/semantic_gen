@@ -15,7 +15,7 @@
 
    ```yaml
    dependencies:
-     semantic_gen: ^0.2.0
+     semantic_gen: ^0.2.1
 
    dev_dependencies:
      build_runner: ^2.4.0

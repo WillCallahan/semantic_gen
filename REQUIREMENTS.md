@@ -177,7 +177,7 @@ loginButton.click();
 - **Score readiness**: Run `pana .` before releases and address all actionable suggestions to keep the package score ≥ 120.
 - **Dry run before publish**: Execute `flutter pub publish --dry-run` (and save output in CI artifacts) to ensure no blockers.
 - **Example app**: Keep `example/` in sync with the package API, ensure it runs on web (`flutter run -d chrome example`), and document Selenium steps in `example/test_driver/`.
-- **Continuous delivery**: Tag releases with `v<version>` and automate publishing validation in GitHub Actions (but leave the final `pub publish` manual unless secrets are injected).
+- **Continuous delivery**: Tag releases with `v<version>` and let pub.dev's automated publishing (GitHub Actions + OIDC) perform the final `dart pub publish` when that tag is pushed.
 
 ---
 

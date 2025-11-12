@@ -190,7 +190,7 @@ Submit a PR with a descriptive title, linked issue (if applicable), and screensh
 - Run `dart format`, `flutter analyze`, `dart test test/vm`, `flutter test test/runtime_test.dart`, and `pana .`.
 - Execute `flutter pub publish --dry-run` and record the output in CI artifacts.
 - Tag the release (`git tag v<version>`) before publishing.
-- Trigger the `Publish` GitHub Action with the new tag once checks pass (requires `PUB_CREDENTIALS` secret).
+- Push the release tag (`v<version>`) to trigger the automated Publish workflow configured via pub.dev's OIDC integration (no stored secrets required).
 
 ---
 

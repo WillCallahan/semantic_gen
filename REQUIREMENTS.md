@@ -118,18 +118,18 @@ description: >-
   Compile-time helpers to expose Selenium-friendly ARIA semantics in Flutter Web.
 version: 0.2.1
 environment:
-  sdk: ">=3.5.0 <4.0.0"
+  sdk: ">=3.7.0 <4.0.0"
   flutter: ">=3.27.0"
 dependencies:
   flutter:
     sdk: flutter
-  meta: ^1.12.0
+  meta: ^1.16.0
 dev_dependencies:
-  build_runner: ^2.4.0
-  source_gen: ^1.5.0
-  analyzer: ^6.4.1
-  flutter_lints: ^3.0.0
-  test: ^1.25.0
+  build_runner: ^2.7.1
+  source_gen: ^3.0.0
+  analyzer: ^7.7.1
+  flutter_lints: ^5.0.0
+  test: ^1.26.2
 topics: [testing, selenium, source-gen, accessibility, web]
 ```
 

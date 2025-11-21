@@ -28,7 +28,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   test: ^1.26.2
-  build_runner: 2.4.5
+  build_runner: ^2.7.1
   build_test: ^3.3.3
   flutter_lints: ^5.0.0
   pana: ^0.22.21

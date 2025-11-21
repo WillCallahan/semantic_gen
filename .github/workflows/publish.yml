@@ -198,6 +198,9 @@ jobs:
           VERSION=${{ steps.get_version.outputs.TAG_VERSION }}
           sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
 
+      - name: Version | Stage pubspec.yaml
+        run: git add pubspec.yaml
+
 
       - name: Publish | Dry run
         run: dart pub publish --dry-run

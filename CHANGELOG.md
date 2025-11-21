@@ -1,4 +1,4 @@
-## 0.2.4
+## 0.2.2
 
 - Temporarily pin `source_gen` to the 3.x line to stay compatible with dependent tooling that has not yet adopted 4.x.
 - Raise the minimum supported Dart SDK to 3.7 to match the constraints of our build and analyzer tooling.

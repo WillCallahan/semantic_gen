@@ -94,12 +94,30 @@ class AutoTagGenerator extends Generator {
   GeneratorOptions? _resolvedOptionsCache;
   bool _triedResolvingOptions = false;
 
-  static const Set<String> _defaultWidgets = <String>{
-    'Text',
-    'SelectableText',
-    'TextField',
-    'TextFormField',
-  };
+  static const List<_DefaultWidgetConfig> _defaultWidgets =
+      <_DefaultWidgetConfig>[
+    _DefaultWidgetConfig('Text'),
+    _DefaultWidgetConfig('SelectableText'),
+    _DefaultWidgetConfig('TextField'),
+    _DefaultWidgetConfig('TextFormField'),
+    _DefaultWidgetConfig('GestureDetector', isButton: true),
+    _DefaultWidgetConfig('InkWell', isButton: true),
+    _DefaultWidgetConfig('InkResponse', isButton: true),
+    _DefaultWidgetConfig('RawMaterialButton', isButton: true),
+    _DefaultWidgetConfig('ElevatedButton', isButton: true),
+    _DefaultWidgetConfig('FilledButton', isButton: true),
+    _DefaultWidgetConfig('OutlinedButton', isButton: true),
+    _DefaultWidgetConfig('TextButton', isButton: true),
+    _DefaultWidgetConfig('IconButton', isButton: true),
+    _DefaultWidgetConfig('FloatingActionButton', isButton: true),
+    _DefaultWidgetConfig('DropdownButton', isButton: true),
+    _DefaultWidgetConfig('PopupMenuButton', isButton: true),
+    _DefaultWidgetConfig('MenuItemButton', isButton: true),
+    _DefaultWidgetConfig('ListTile', isButton: true),
+    _DefaultWidgetConfig('CheckboxListTile', isButton: true),
+    _DefaultWidgetConfig('SwitchListTile', isButton: true),
+    _DefaultWidgetConfig('RadioListTile', isButton: true),
+  ];
 
   static const TypeChecker _autoTagChecker = TypeChecker.fromUrl(
     'package:semantic_gen/src/annotations.dart#AutoTag',
@@ -363,8 +381,25 @@ class AutoTagGenerator extends Generator {
       }
     }
 
+    for (final widget in _defaultWidgets) {
+      final sanitized = _sanitizeIdentifier(widget.typeName);
+      if (sanitized == null) {
+        log.warning('Skipping invalid widget name: ${widget.typeName}');
+        continue;
+      }
+      addWrapper(
+        _WrapperSpec(
+          typeName: sanitized,
+          namespace: 'auto',
+          prefix: options.prefix,
+          testId: null,
+          isButton: widget.isButton,
+          isTextField: widget.isTextField,
+        ),
+      );
+    }
+
     final combinedWidgetNames = <String>{
-      ..._defaultWidgets,
       ...options.globalWidgets,
       ...libraryWidgetNames,
     };
@@ -546,6 +581,18 @@ class _WrapperSpec {
     }
     return '$prefix:$namespace:$typeName';
   }
+}
+
+class _DefaultWidgetConfig {
+  const _DefaultWidgetConfig(
+    this.typeName, {
+    this.isButton,
+    this.isTextField,
+  });
+
+  final String typeName;
+  final bool? isButton;
+  final bool? isTextField;
 }
 
 /// Lightweight descriptor for a class that will receive a semantics wrapper.

@@ -126,7 +126,7 @@ Production builds can omit the `--define` (or point it at a different file), kee
 
 ## 🔖 Generated Wrappers & Annotations
 
-- **Default coverage**: `Text`, `SelectableText`, `TextField`, and `TextFormField` are auto-wrapped with `Semantics(label: 'test:auto:<TypeName>')`.
+- **Default coverage**: `Text`, `SelectableText`, `TextField`, `TextFormField`, `GestureDetector`, `InkWell`, and common Material tap targets (e.g. `ElevatedButton`, `FilledButton`, `OutlinedButton`, `TextButton`, `IconButton`, `FloatingActionButton`, `DropdownButton`, `MenuItemButton`, `PopupMenuButton`, and the `ListTile` variants) are auto-wrapped with `Semantics(label: 'test:auto:<TypeName>')`.
 - **Custom classes**: Annotate widgets with `@AutoWrapWidgets(['ElevatedButton'])` or use `build.yaml` to list additional types.
 - **Explicit IDs**: Apply `@TestId('login-button')` or `testTag('checkout-button', child)` when you need deterministic identifiers.
 - **Runtime helper**: `testTag()` exposes convenience parameters to mark buttons, text fields, and other semantics roles.

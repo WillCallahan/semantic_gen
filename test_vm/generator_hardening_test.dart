@@ -19,8 +19,37 @@ void main() {
             'TextTagged',
             'SelectableTextTagged',
             'TextFieldTagged',
-            'TextFormFieldTagged'
+            'TextFormFieldTagged',
+            'GestureDetectorTagged',
+            'InkWellTagged',
+            'ElevatedButtonTagged',
           ]));
+    });
+
+    test('default tap targets are marked as buttons', () {
+      final generator = AutoTagGenerator(const GeneratorOptions());
+      final wrappers = generator.collectWrappersForTesting();
+
+      expect(
+        wrappers.singleWhere(
+          (wrapper) => wrapper.wrapperName == 'GestureDetectorTagged',
+        ).button,
+        isTrue,
+      );
+
+      expect(
+        wrappers.singleWhere(
+          (wrapper) => wrapper.wrapperName == 'InkWellTagged',
+        ).button,
+        isTrue,
+      );
+
+      expect(
+        wrappers.singleWhere(
+          (wrapper) => wrapper.wrapperName == 'TextTagged',
+        ).button,
+        isFalse,
+      );
     });
 
     test('sanitizes invalid identifiers and logs warning', () {

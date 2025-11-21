@@ -1,7 +1,13 @@
 ## Unreleased
 
+- TBD
+
+## 0.2.2
+
 - Temporarily pin `source_gen` to the 3.x line to stay compatible with dependent tooling that has not yet adopted 4.x.
 - Raise the minimum supported Dart SDK to 3.7 to match the constraints of our build and analyzer tooling.
+- Renames the package to `semantic_gen` and updates library entry points and examples.
+- Automatically wraps common tap targets (e.g. `GestureDetector`, `InkWell`, Material buttons, and `ListTile` variants) so tap-able widgets receive deterministic semantics without extra configuration.
 
 ## 0.2.1
 

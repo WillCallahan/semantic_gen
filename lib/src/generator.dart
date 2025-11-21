@@ -74,16 +74,19 @@ class AutoTagGenerator extends Generator {
     final configPathValue = config['config_path'];
 
     return GeneratorOptions(
-      globalWidgets: widgetsValue is Iterable
-          ? widgetsValue.map((dynamic value) => value.toString()).toList()
-          : const <String>[],
-      prefix: prefixValue is String && prefixValue.isNotEmpty
-          ? prefixValue
-          : 'test',
+      globalWidgets:
+          widgetsValue is Iterable
+              ? widgetsValue.map((dynamic value) => value.toString()).toList()
+              : const <String>[],
+      prefix:
+          prefixValue is String && prefixValue.isNotEmpty
+              ? prefixValue
+              : 'test',
       enabled: enabledValue is bool ? enabledValue : true,
-      configPath: configPathValue is String && configPathValue.isNotEmpty
-          ? configPathValue
-          : 'semantic_gen.yaml',
+      configPath:
+          configPathValue is String && configPathValue.isNotEmpty
+              ? configPathValue
+              : 'semantic_gen.yaml',
     );
   }
 
@@ -96,28 +99,28 @@ class AutoTagGenerator extends Generator {
 
   static const List<_DefaultWidgetConfig> _defaultWidgets =
       <_DefaultWidgetConfig>[
-    _DefaultWidgetConfig('Text'),
-    _DefaultWidgetConfig('SelectableText'),
-    _DefaultWidgetConfig('TextField'),
-    _DefaultWidgetConfig('TextFormField'),
-    _DefaultWidgetConfig('GestureDetector', isButton: true),
-    _DefaultWidgetConfig('InkWell', isButton: true),
-    _DefaultWidgetConfig('InkResponse', isButton: true),
-    _DefaultWidgetConfig('RawMaterialButton', isButton: true),
-    _DefaultWidgetConfig('ElevatedButton', isButton: true),
-    _DefaultWidgetConfig('FilledButton', isButton: true),
-    _DefaultWidgetConfig('OutlinedButton', isButton: true),
-    _DefaultWidgetConfig('TextButton', isButton: true),
-    _DefaultWidgetConfig('IconButton', isButton: true),
-    _DefaultWidgetConfig('FloatingActionButton', isButton: true),
-    _DefaultWidgetConfig('DropdownButton', isButton: true),
-    _DefaultWidgetConfig('PopupMenuButton', isButton: true),
-    _DefaultWidgetConfig('MenuItemButton', isButton: true),
-    _DefaultWidgetConfig('ListTile', isButton: true),
-    _DefaultWidgetConfig('CheckboxListTile', isButton: true),
-    _DefaultWidgetConfig('SwitchListTile', isButton: true),
-    _DefaultWidgetConfig('RadioListTile', isButton: true),
-  ];
+        _DefaultWidgetConfig('Text'),
+        _DefaultWidgetConfig('SelectableText'),
+        _DefaultWidgetConfig('TextField'),
+        _DefaultWidgetConfig('TextFormField'),
+        _DefaultWidgetConfig('GestureDetector', isButton: true),
+        _DefaultWidgetConfig('InkWell', isButton: true),
+        _DefaultWidgetConfig('InkResponse', isButton: true),
+        _DefaultWidgetConfig('RawMaterialButton', isButton: true),
+        _DefaultWidgetConfig('ElevatedButton', isButton: true),
+        _DefaultWidgetConfig('FilledButton', isButton: true),
+        _DefaultWidgetConfig('OutlinedButton', isButton: true),
+        _DefaultWidgetConfig('TextButton', isButton: true),
+        _DefaultWidgetConfig('IconButton', isButton: true),
+        _DefaultWidgetConfig('FloatingActionButton', isButton: true),
+        _DefaultWidgetConfig('DropdownButton', isButton: true),
+        _DefaultWidgetConfig('PopupMenuButton', isButton: true),
+        _DefaultWidgetConfig('MenuItemButton', isButton: true),
+        _DefaultWidgetConfig('ListTile', isButton: true),
+        _DefaultWidgetConfig('CheckboxListTile', isButton: true),
+        _DefaultWidgetConfig('SwitchListTile', isButton: true),
+        _DefaultWidgetConfig('RadioListTile', isButton: true),
+      ];
 
   static const TypeChecker _autoTagChecker = TypeChecker.fromUrl(
     'package:semantic_gen/src/annotations.dart#AutoTag',
@@ -130,10 +133,7 @@ class AutoTagGenerator extends Generator {
   );
 
   @override
-  Future<String> generate(
-    LibraryReader library,
-    BuildStep buildStep,
-  ) async {
+  Future<String> generate(LibraryReader library, BuildStep buildStep) async {
     final effectiveOptions = await _effectiveOptions(buildStep);
     final buffer = _createBuffer(buildStep);
 
@@ -155,7 +155,8 @@ class AutoTagGenerator extends Generator {
       buffer
         ..writeln('class ${wrapper.wrapperName} extends StatelessWidget {')
         ..writeln(
-            '  const ${wrapper.wrapperName}({Key? key, required this.child}) : super(key: key);')
+          '  const ${wrapper.wrapperName}({Key? key, required this.child}) : super(key: key);',
+        )
         ..writeln()
         ..writeln('  final ${wrapper.typeName} child;')
         ..writeln()
@@ -195,9 +196,7 @@ class AutoTagGenerator extends Generator {
     return _resolvedOptionsCache!;
   }
 
-  Future<GeneratorConfigOverrides?> _loadOverrides(
-    BuildStep buildStep,
-  ) async {
+  Future<GeneratorConfigOverrides?> _loadOverrides(BuildStep buildStep) async {
     final configPath = _baseOptions.configPath;
     if (configPath == null || configPath.isEmpty) {
       return null;
@@ -220,11 +219,7 @@ class AutoTagGenerator extends Generator {
     } on AssetNotFoundException {
       return null;
     } catch (error, stackTrace) {
-      log.severe(
-        'semantic_gen: failed to load $configPath',
-        error,
-        stackTrace,
-      );
+      log.severe('semantic_gen: failed to load $configPath', error, stackTrace);
       return null;
     }
   }
@@ -233,9 +228,10 @@ class AutoTagGenerator extends Generator {
     final prefixRaw = yaml['prefix'];
     return GeneratorConfigOverrides(
       globalWidgets: _stringList(yaml['auto_wrap_widgets']),
-      prefix: prefixRaw is String && prefixRaw.isNotEmpty
-          ? prefixRaw
-          : prefixRaw != null && prefixRaw.toString().isNotEmpty
+      prefix:
+          prefixRaw is String && prefixRaw.isNotEmpty
+              ? prefixRaw
+              : prefixRaw != null && prefixRaw.toString().isNotEmpty
               ? prefixRaw.toString()
               : null,
       enabled: _boolValue(yaml['enabled']),
@@ -299,8 +295,9 @@ class AutoTagGenerator extends Generator {
 
       final autoTagReader = ConstantReader(autoTagAnnotation);
       final namespace = autoTagReader.peek('namespace')?.stringValue;
-      final testIdAnnotation =
-          _testIdChecker.firstAnnotationOfExact(classElement);
+      final testIdAnnotation = _testIdChecker.firstAnnotationOfExact(
+        classElement,
+      );
       final testIdReader =
           testIdAnnotation == null ? null : ConstantReader(testIdAnnotation);
       final testId = testIdReader?.peek('value')?.stringValue;
@@ -438,8 +435,9 @@ class AutoTagGenerator extends Generator {
   }
 
   Iterable<String> _libraryWidgetNames(LibraryReader library) sync* {
-    for (final annotated
-        in library.libraryDirectivesAnnotatedWith(_autoWrapChecker)) {
+    for (final annotated in library.libraryDirectivesAnnotatedWith(
+      _autoWrapChecker,
+    )) {
       final widgetTypes = annotated.annotation.peek('widgetTypes');
       if (widgetTypes == null || !widgetTypes.isList) {
         continue;
@@ -494,16 +492,18 @@ class AutoTagGenerator extends Generator {
   static bool _looksLikeButton(InterfaceElement2 element) {
     return inferButtonFlag(
       name: element.displayName,
-      superTypes:
-          element.allSupertypes.map((type) => type.element3.displayName),
+      superTypes: element.allSupertypes.map(
+        (type) => type.element3.displayName,
+      ),
     );
   }
 
   static bool _looksLikeTextField(InterfaceElement2 element) {
     return inferTextFieldFlag(
       name: element.displayName,
-      superTypes:
-          element.allSupertypes.map((type) => type.element3.displayName),
+      superTypes: element.allSupertypes.map(
+        (type) => type.element3.displayName,
+      ),
     );
   }
 
@@ -559,10 +559,10 @@ class _WrapperSpec {
     required this.testId,
     bool? isButton,
     bool? isTextField,
-  })  : button = isButton ?? typeName.toLowerCase().contains('button'),
-        textField = isTextField ?? typeName.toLowerCase().contains('field'),
-        container = true,
-        enabled = true;
+  }) : button = isButton ?? typeName.toLowerCase().contains('button'),
+       textField = isTextField ?? typeName.toLowerCase().contains('field'),
+       container = true,
+       enabled = true;
 
   final String typeName;
   final String prefix;
@@ -584,11 +584,7 @@ class _WrapperSpec {
 }
 
 class _DefaultWidgetConfig {
-  const _DefaultWidgetConfig(
-    this.typeName, {
-    this.isButton,
-    this.isTextField,
-  });
+  const _DefaultWidgetConfig(this.typeName, {this.isButton, this.isTextField});
 
   final String typeName;
   final bool? isButton;

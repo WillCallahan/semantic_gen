@@ -14,16 +14,17 @@ void main() {
 
       expect(wrappers, isNotEmpty);
       expect(
-          wrappers.map((wrapper) => wrapper.wrapperName),
-          containsAll(<String>[
-            'TextTagged',
-            'SelectableTextTagged',
-            'TextFieldTagged',
-            'TextFormFieldTagged',
-            'GestureDetectorTagged',
-            'InkWellTagged',
-            'ElevatedButtonTagged',
-          ]));
+        wrappers.map((wrapper) => wrapper.wrapperName),
+        containsAll(<String>[
+          'TextTagged',
+          'SelectableTextTagged',
+          'TextFieldTagged',
+          'TextFormFieldTagged',
+          'GestureDetectorTagged',
+          'InkWellTagged',
+          'ElevatedButtonTagged',
+        ]),
+      );
     });
 
     test('default tap targets are marked as buttons', () {
@@ -31,23 +32,25 @@ void main() {
       final wrappers = generator.collectWrappersForTesting();
 
       expect(
-        wrappers.singleWhere(
-          (wrapper) => wrapper.wrapperName == 'GestureDetectorTagged',
-        ).button,
+        wrappers
+            .singleWhere(
+              (wrapper) => wrapper.wrapperName == 'GestureDetectorTagged',
+            )
+            .button,
         isTrue,
       );
 
       expect(
-        wrappers.singleWhere(
-          (wrapper) => wrapper.wrapperName == 'InkWellTagged',
-        ).button,
+        wrappers
+            .singleWhere((wrapper) => wrapper.wrapperName == 'InkWellTagged')
+            .button,
         isTrue,
       );
 
       expect(
-        wrappers.singleWhere(
-          (wrapper) => wrapper.wrapperName == 'TextTagged',
-        ).button,
+        wrappers
+            .singleWhere((wrapper) => wrapper.wrapperName == 'TextTagged')
+            .button,
         isFalse,
       );
     });
@@ -58,12 +61,14 @@ void main() {
         libraryWidgetNames: const [
           'ValidName',
           'Invalid Name',
-          '1NotAnIdentifier'
+          '1NotAnIdentifier',
         ],
       );
 
-      expect(wrappers.map((wrapper) => wrapper.wrapperName),
-          contains('ValidNameTagged'));
+      expect(
+        wrappers.map((wrapper) => wrapper.wrapperName),
+        contains('ValidNameTagged'),
+      );
       expect(wrappers, isNot(contains('Invalid NameTagged')));
     });
 
@@ -86,21 +91,26 @@ void main() {
       );
 
       final button = wrappers.singleWhere(
-          (wrapper) => wrapper.wrapperName == 'CheckoutButtonTagged');
+        (wrapper) => wrapper.wrapperName == 'CheckoutButtonTagged',
+      );
       expect(button.semanticsLabel, 'qa:checkout-button');
       expect(button.button, isTrue);
       expect(button.textField, isFalse);
 
-      final field = wrappers
-          .singleWhere((wrapper) => wrapper.wrapperName == 'SearchFieldTagged');
+      final field = wrappers.singleWhere(
+        (wrapper) => wrapper.wrapperName == 'SearchFieldTagged',
+      );
       expect(field.semanticsLabel, 'qa:forms:SearchField');
       expect(field.textField, isTrue);
     });
 
     test('extracts widget names from AutoWrapWidgets annotations', () {
-      final names = AutoTagGenerator.widgetNamesFromStrings(
-        const ['ElevatedButton', null, ''],
-      ).toList();
+      final names =
+          AutoTagGenerator.widgetNamesFromStrings(const [
+            'ElevatedButton',
+            null,
+            '',
+          ]).toList();
 
       expect(names, contains('ElevatedButton'));
       expect(names.length, 1);

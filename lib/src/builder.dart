@@ -6,8 +6,7 @@ import 'generator.dart';
 /// Creates the build_runner builder that drives the semantics generator.
 Builder autoTagBuilder(BuilderOptions options) {
   final generatorOptions = AutoTagGenerator.parseConfig(options.config);
-  return SharedPartBuilder(
-    [AutoTagGenerator(generatorOptions)],
-    'semantic_gen',
-  );
+  return SharedPartBuilder([
+    AutoTagGenerator(generatorOptions),
+  ], 'semantic_gen');
 }

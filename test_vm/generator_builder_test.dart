@@ -51,9 +51,7 @@ class ProfileHeader extends StatelessWidget {
       final outputPaths =
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
-        outputPaths.any(
-          (path) => path.contains('sample.semantic_gen.g.part'),
-        ),
+        outputPaths.any((path) => path.contains('sample.semantic_gen.g.part')),
         isTrue,
         reason: 'outputs: $outputPaths',
       );
@@ -93,9 +91,7 @@ class Demo extends StatelessWidget {
       final outputPaths =
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
-        outputPaths.any(
-          (path) => path.contains('sample.semantic_gen.g.part'),
-        ),
+        outputPaths.any((path) => path.contains('sample.semantic_gen.g.part')),
         isTrue,
         reason: 'outputs: $outputPaths',
       );
@@ -147,8 +143,9 @@ Map<String, String> _packageSourceAssets() {
 
   return <String, String>{
     'semantic_gen|lib/semantic_gen.dart': read('lib/semantic_gen.dart'),
-    'semantic_gen|lib/semantic_gen.tagged.g.dart':
-        read('lib/semantic_gen.tagged.g.dart'),
+    'semantic_gen|lib/semantic_gen.tagged.g.dart': read(
+      'lib/semantic_gen.tagged.g.dart',
+    ),
     'semantic_gen|lib/src/annotations.dart': read('lib/src/annotations.dart'),
     'semantic_gen|lib/src/runtime.dart': read('lib/src/runtime.dart'),
   };

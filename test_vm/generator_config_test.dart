@@ -45,15 +45,14 @@ void main() {
         ),
         isTrue,
       );
-      expect(
-        AutoTagGenerator.inferButtonFlag(name: 'PlainWidget'),
-        isFalse,
-      );
+      expect(AutoTagGenerator.inferButtonFlag(name: 'PlainWidget'), isFalse);
     });
 
     test('inferTextFieldFlag looks for text-field keywords', () {
       expect(
-          AutoTagGenerator.inferTextFieldFlag(name: 'BestTextField'), isTrue);
+        AutoTagGenerator.inferTextFieldFlag(name: 'BestTextField'),
+        isTrue,
+      );
       expect(
         AutoTagGenerator.inferTextFieldFlag(
           name: 'RichEditor',
@@ -61,10 +60,7 @@ void main() {
         ),
         isTrue,
       );
-      expect(
-        AutoTagGenerator.inferTextFieldFlag(name: 'PlainWidget'),
-        isFalse,
-      );
+      expect(AutoTagGenerator.inferTextFieldFlag(name: 'PlainWidget'), isFalse);
     });
   });
 }

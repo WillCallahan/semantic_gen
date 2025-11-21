@@ -85,7 +85,6 @@ void main() {
           generator.describeClassForTest(
             name: 'SearchField',
             namespace: 'forms',
-            isTextField: true,
           ),
         ],
       );
@@ -123,14 +122,13 @@ void main() {
         namespace: '',
         testId: 'checkout-button',
         isButton: true,
-        isTextField: false,
       );
 
       expect(descriptor.name, 'CheckoutButton');
       expect(descriptor.namespace, isNull);
       expect(descriptor.testId, 'checkout-button');
       expect(descriptor.isButton, isTrue);
-      expect(descriptor.isTextField, isFalse);
+
     });
   });
 }

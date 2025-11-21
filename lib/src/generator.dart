@@ -308,7 +308,6 @@ class AutoTagGenerator extends Generator {
           namespace: namespace,
           testId: testId,
           isButton: _looksLikeButton(classElement),
-          isTextField: _looksLikeTextField(classElement),
         ),
       );
     }
@@ -327,14 +326,12 @@ class AutoTagGenerator extends Generator {
     String? namespace,
     String? testId,
     bool isButton = false,
-    bool isTextField = false,
   }) {
     return AutoTagClassDescriptor(
       name: name,
       namespace: namespace?.isNotEmpty == true ? namespace : null,
       testId: testId?.isNotEmpty == true ? testId : null,
       isButton: isButton,
-      isTextField: isTextField,
     );
   }
 
@@ -391,7 +388,6 @@ class AutoTagGenerator extends Generator {
           prefix: options.prefix,
           testId: null,
           isButton: widget.isButton,
-          isTextField: widget.isTextField,
         ),
       );
     }
@@ -425,7 +421,6 @@ class AutoTagGenerator extends Generator {
           prefix: options.prefix,
           testId: descriptor.testId,
           isButton: descriptor.isButton,
-          isTextField: descriptor.isTextField,
         ),
       );
     }
@@ -472,7 +467,6 @@ class AutoTagGenerator extends Generator {
     String? namespace,
     String? testId,
     required bool isButton,
-    required bool isTextField,
   }) {
     final sanitizedName = _sanitizeIdentifier(className) ?? className;
     final normalizedNamespace =
@@ -485,21 +479,11 @@ class AutoTagGenerator extends Generator {
       namespace: normalizedNamespace,
       testId: normalizedTestId,
       isButton: isButton,
-      isTextField: isTextField,
     );
   }
 
   static bool _looksLikeButton(InterfaceElement2 element) {
     return inferButtonFlag(
-      name: element.displayName,
-      superTypes: element.allSupertypes.map(
-        (type) => type.element3.displayName,
-      ),
-    );
-  }
-
-  static bool _looksLikeTextField(InterfaceElement2 element) {
-    return inferTextFieldFlag(
       name: element.displayName,
       superTypes: element.allSupertypes.map(
         (type) => type.element3.displayName,
@@ -584,11 +568,10 @@ class _WrapperSpec {
 }
 
 class _DefaultWidgetConfig {
-  const _DefaultWidgetConfig(this.typeName, {this.isButton, this.isTextField});
+  const _DefaultWidgetConfig(this.typeName, {this.isButton});
 
   final String typeName;
   final bool? isButton;
-  final bool? isTextField;
 }
 
 /// Lightweight descriptor for a class that will receive a semantics wrapper.
@@ -600,7 +583,6 @@ class AutoTagClassDescriptor {
     this.namespace,
     this.testId,
     required this.isButton,
-    required this.isTextField,
   });
 
   /// Class name to wrap.
@@ -614,9 +596,6 @@ class AutoTagClassDescriptor {
 
   /// Whether the widget should expose the button semantic flag.
   final bool isButton;
-
-  /// Whether the widget should expose the text field semantic flag.
-  final bool isTextField;
 }
 
 /// Public view of a generated wrapper used exclusively for testing.

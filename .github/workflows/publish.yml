@@ -131,7 +131,7 @@ jobs:
       needs.checks.result == 'success'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     environment:
       name: pub-dev
@@ -180,6 +180,31 @@ jobs:
 
       - name: Restore | Fetch dependencies
         run: dart pub get
+
+      - name: Version | Get version from event
+        id: get_version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION_FROM_EVENT="${{ inputs.tag }}"
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION_FROM_EVENT="${{ github.event.release.tag_name }}"
+          else
+            VERSION_FROM_EVENT="${GITHUB_REF_NAME}"
+          fi
+          echo "TAG_VERSION=${VERSION_FROM_EVENT#v}" >> $GITHUB_OUTPUT
+
+      - name: Version | Update pubspec.yaml
+        run: |
+          VERSION=${{ steps.get_version.outputs.TAG_VERSION }}
+          sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
+
+      - name: Version | Commit and push pubspec.yaml
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore(release): version ${{ steps.get_version.outputs.TAG_VERSION }}"
+          git push
 
       - name: Publish | Dry run
         run: dart pub publish --dry-run

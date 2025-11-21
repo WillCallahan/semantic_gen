@@ -128,7 +128,6 @@ void main() {
       expect(descriptor.namespace, isNull);
       expect(descriptor.testId, 'checkout-button');
       expect(descriptor.isButton, isTrue);
-
     });
   });
 }

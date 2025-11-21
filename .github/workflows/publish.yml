@@ -193,13 +193,18 @@ jobs:
           fi
           echo "TAG_VERSION=${VERSION_FROM_EVENT#v}" >> $GITHUB_OUTPUT
 
-      - name: Version | Update pubspec.yaml
+      - name: Version | Update files
         run: |
           VERSION=${{ steps.get_version.outputs.TAG_VERSION }}
           sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
+          sed -i "1s/^/## $VERSION\n\n- Maintenance release to fix CI\/CD pipeline issues.\n\n/" CHANGELOG.md
 
-      - name: Version | Stage pubspec.yaml
-        run: git add pubspec.yaml
+      - name: Version | Commit files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml CHANGELOG.md
+          git commit -m "chore(release): version ${{ steps.get_version.outputs.TAG_VERSION }}"
 
 
       - name: Publish | Dry run

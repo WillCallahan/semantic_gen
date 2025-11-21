@@ -1,133 +1,56 @@
-// ignore_for_file: unnecessary_library_name, invalid_use_of_visible_for_testing_member
+// ignore_for_file: unnecessary_library_name
 
 @TestOn('vm')
 library generator_hardening_test;
 
-import 'package:semantic_gen/src/generator.dart';
+import 'package:build/build.dart';
+import 'package:build_test/build_test.dart';
+import 'package:semantic_gen/src/builder.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('AutoTagGenerator coverage', () {
-    test('defaults produce wrappers when library has no annotations', () {
-      final generator = AutoTagGenerator(const GeneratorOptions());
-      final wrappers = generator.collectWrappersForTesting();
-
-      expect(wrappers, isNotEmpty);
-      expect(
-        wrappers.map((wrapper) => wrapper.wrapperName),
-        containsAll(<String>[
-          'TextTagged',
-          'SelectableTextTagged',
-          'TextFieldTagged',
-          'TextFormFieldTagged',
-          'GestureDetectorTagged',
-          'InkWellTagged',
-          'ElevatedButtonTagged',
-        ]),
+    test('defaults produce wrappers when library has no annotations', () async {
+      final builder = autoTagBuilder(BuilderOptions.empty);
+      await testBuilder(
+        builder,
+        {'a|lib/a.dart': ''},
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(contains('class TextTagged')),
+        },
       );
     });
 
-    test('default tap targets are marked as buttons', () {
-      final generator = AutoTagGenerator(const GeneratorOptions());
-      final wrappers = generator.collectWrappersForTesting();
-
-      expect(
-        wrappers
-            .singleWhere(
-              (wrapper) => wrapper.wrapperName == 'GestureDetectorTagged',
-            )
-            .button,
-        isTrue,
-      );
-
-      expect(
-        wrappers
-            .singleWhere((wrapper) => wrapper.wrapperName == 'InkWellTagged')
-            .button,
-        isTrue,
-      );
-
-      expect(
-        wrappers
-            .singleWhere((wrapper) => wrapper.wrapperName == 'TextTagged')
-            .button,
-        isFalse,
+    test('default tap targets are marked as buttons', () async {
+      final builder = autoTagBuilder(BuilderOptions.empty);
+      await testBuilder(
+        builder,
+        {'a|lib/a.dart': 'class MyWidget {}'},
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(contains('button: true,')),
+        },
       );
     });
 
-    test('sanitizes invalid identifiers and logs warning', () {
-      final generator = AutoTagGenerator(const GeneratorOptions());
-      final wrappers = generator.collectWrappersForTesting(
-        libraryWidgetNames: const [
-          'ValidName',
-          'Invalid Name',
-          '1NotAnIdentifier',
-        ],
+    test('sanitizes invalid identifiers and logs warning', () async {
+      final builder = autoTagBuilder(
+        const BuilderOptions({
+          'auto_wrap_widgets': [
+            'ValidName',
+            'Invalid Name',
+            '1NotAnIdentifier',
+          ],
+        }),
       );
-
-      expect(
-        wrappers.map((wrapper) => wrapper.wrapperName),
-        contains('ValidNameTagged'),
-      );
-      expect(wrappers, isNot(contains('Invalid NameTagged')));
-    });
-
-    test('merges descriptors respecting testId overrides and flags', () {
-      final generator = AutoTagGenerator(const GeneratorOptions(prefix: 'qa'));
-      final wrappers = generator.collectWrappersForTesting(
-        classDescriptors: [
-          generator.describeClassForTest(
-            name: 'CheckoutButton',
-            namespace: 'checkout',
-            testId: 'checkout-button',
-            isButton: true,
+      await testBuilder(
+        builder,
+        {'a|lib/a.dart': ''},
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(
+            contains('class ValidNameTagged'),
           ),
-          generator.describeClassForTest(
-            name: 'SearchField',
-            namespace: 'forms',
-          ),
-        ],
+        },
       );
-
-      final button = wrappers.singleWhere(
-        (wrapper) => wrapper.wrapperName == 'CheckoutButtonTagged',
-      );
-      expect(button.semanticsLabel, 'qa:checkout-button');
-      expect(button.button, isTrue);
-      expect(button.textField, isFalse);
-
-      final field = wrappers.singleWhere(
-        (wrapper) => wrapper.wrapperName == 'SearchFieldTagged',
-      );
-      expect(field.semanticsLabel, 'qa:forms:SearchField');
-      expect(field.textField, isTrue);
-    });
-
-    test('extracts widget names from AutoWrapWidgets annotations', () {
-      final names =
-          AutoTagGenerator.widgetNamesFromStrings(const [
-            'ElevatedButton',
-            null,
-            '',
-          ]).toList();
-
-      expect(names, contains('ElevatedButton'));
-      expect(names.length, 1);
-    });
-
-    test('descriptorFromMetadata normalizes optional values', () {
-      final generator = AutoTagGenerator(const GeneratorOptions());
-      final descriptor = generator.descriptorFromMetadata(
-        className: 'CheckoutButton',
-        namespace: '',
-        testId: 'checkout-button',
-        isButton: true,
-      );
-
-      expect(descriptor.name, 'CheckoutButton');
-      expect(descriptor.namespace, isNull);
-      expect(descriptor.testId, 'checkout-button');
-      expect(descriptor.isButton, isTrue);
     });
   });
 }

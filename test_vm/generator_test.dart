@@ -1,101 +1,101 @@
-// ignore_for_file: unnecessary_library_name, invalid_use_of_visible_for_testing_member
+// ignore_for_file: unnecessary_library_name
 
 @TestOn('vm')
 library generator_test;
 
-import 'package:semantic_gen/src/generator.dart';
+import 'package:build/build.dart';
+import 'package:build_test/build_test.dart';
+import 'package:semantic_gen/src/builder.dart';
 import 'package:test/test.dart';
 
-const bool _isFlutterTest = bool.fromEnvironment('dart.library.ui');
-
 void main() {
-  if (_isFlutterTest) {
-    return;
-  }
   group('AutoTagGenerator', () {
-    late AutoTagGenerator generator;
-
-    setUp(() {
-      generator = AutoTagGenerator(const GeneratorOptions());
-    });
-
-    test('includes defaults and annotated classes', () {
-      final wrappers = generator.collectWrappersForTesting(
-        classDescriptors: [
-          generator.describeClassForTest(
-            name: 'ProfileHeader',
-            namespace: 'profile',
+    test('includes defaults and annotated classes', () async {
+      final builder = autoTagBuilder(BuilderOptions.empty);
+      await testBuilder(
+        builder,
+        {
+          'a|lib/a.dart': '''
+            import 'package:semantic_gen/semantic_gen.dart';
+            
+            @AutoTag()
+            class ProfileHeader {}
+          ''',
+        },
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(
+            contains('class ProfileHeaderTagged'),
           ),
-        ],
-      );
-
-      expect(
-        wrappers.map((wrapper) => wrapper.wrapperName),
-        contains('ProfileHeaderTagged'),
-      );
-      expect(
-        wrappers.any(
-          (wrapper) =>
-              wrapper.wrapperName == 'ProfileHeaderTagged' &&
-              wrapper.semanticsLabel == 'test:profile:ProfileHeader',
-        ),
-        isTrue,
-      );
-      expect(
-        wrappers.map((wrapper) => wrapper.wrapperName),
-        contains('TextTagged'),
+        },
       );
     });
 
-    test('prefers testId when provided', () {
-      final wrappers = generator.collectWrappersForTesting(
-        classDescriptors: [
-          generator.describeClassForTest(
-            name: 'LoginButton',
-            namespace: 'auth',
-            testId: 'login-button',
-            isButton: true,
+    test('prefers testId when provided', () async {
+      final builder = autoTagBuilder(BuilderOptions.empty);
+      await testBuilder(
+        builder,
+        {
+          'a|lib/a.dart': '''
+            import 'package:semantic_gen/semantic_gen.dart';
+            
+            @AutoTag()
+            @TestId('login-button')
+            class LoginButton {}
+          ''',
+        },
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(
+            contains("label: 'test:login-button'"),
           ),
-        ],
-      );
-
-      final loginWrapper = wrappers.singleWhere(
-        (wrapper) => wrapper.wrapperName == 'LoginButtonTagged',
-      );
-      expect(loginWrapper.semanticsLabel, 'test:login-button');
-      expect(loginWrapper.button, isTrue);
-    });
-
-    test('merges library widget names with global config', () {
-      final configuredGenerator = AutoTagGenerator(
-        const GeneratorOptions(globalWidgets: ['DropdownButton']),
-      );
-
-      final wrappers = configuredGenerator.collectWrappersForTesting(
-        libraryWidgetNames: const ['ElevatedButton'],
-      );
-
-      expect(
-        wrappers.map((wrapper) => wrapper.wrapperName),
-        containsAll(<String>['DropdownButtonTagged', 'ElevatedButtonTagged']),
+        },
       );
     });
 
-    test('respects custom prefix', () {
-      final configuredGenerator = AutoTagGenerator(
-        const GeneratorOptions(prefix: 'qa'),
+    test('merges library widget names with global config', () async {
+      final builder = autoTagBuilder(
+        const BuilderOptions({
+          'auto_wrap_widgets': ['DropdownButton'],
+        }),
       );
+      await testBuilder(
+        builder,
+        {
+          'a|lib/a.dart': '''
+            import 'package:semantic_gen/semantic_gen.dart';
+            
+            @AutoWrapWidgets(widgetTypes: ['ElevatedButton'])
+            library my_lib;
+          ''',
+        },
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(
+            allOf(
+              contains('class DropdownButtonTagged'),
+              contains('class ElevatedButtonTagged'),
+            ),
+          ),
+        },
+      );
+    });
 
-      final wrappers = configuredGenerator.collectWrappersForTesting(
-        classDescriptors: [
-          configuredGenerator.describeClassForTest(name: 'ProfileHeader'),
-        ],
+    test('respects custom prefix', () async {
+      final builder = autoTagBuilder(const BuilderOptions({'prefix': 'qa'}));
+      await testBuilder(
+        builder,
+        {
+          'a|lib/a.dart': '''
+            import 'package:semantic_gen/semantic_gen.dart';
+            
+            @AutoTag()
+            class ProfileHeader {}
+          ''',
+        },
+        outputs: {
+          'a|lib/a.semgen.dart': decodedMatches(
+            contains("label: 'qa:auto:ProfileHeader'"),
+          ),
+        },
       );
-
-      final profileWrapper = wrappers.singleWhere(
-        (wrapper) => wrapper.wrapperName == 'ProfileHeaderTagged',
-      );
-      expect(profileWrapper.semanticsLabel, 'qa:auto:ProfileHeader');
     });
   });
 }

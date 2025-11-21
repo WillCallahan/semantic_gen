@@ -5,7 +5,7 @@
 [![Pub](https://img.shields.io/pub/v/semantic_gen.svg)](https://pub.dev/packages/semantic_gen)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-`semantic_gen` generates deterministic semantics wrappers for Flutter widgets so Selenium and other DOM-driven tools can discover them by stable labels. Annotate the widgets you care about (or configure the generator globally) and let build_runner create the wrappers at compile time.
+`semantic_gen` generates deterministic semantics wrappers for Flutter widgets so Selenium and other DOM-driven tools can discover them by stable labels. Annotate the widgets you care about (or configure the generator globally) and let build_runner do the rest at compile time.
 
 ---
 
@@ -15,10 +15,10 @@
 
    ```yaml
    dependencies:
-     semantic_gen: ^0.2.1
+     semantic_gen: ^0.2.3
 
    dev_dependencies:
-     build_runner: ^2.4.0
+     build_runner: ^2.7.1
    ```
 
 2. (Optional) Drop a `semantic_gen.yaml` next to your `pubspec.yaml` to tweak behaviour:
@@ -30,8 +30,7 @@
      - ElevatedButton
    ```
 
-3. Create a library with a `part` directive, opt into wrapping, then trigger code
-   generation:
+3. Annotate a widget with `@AutoTag` and trigger code generation:
 
    ```bash
    flutter pub get
@@ -40,11 +39,6 @@
 
 ```dart
 import 'package:semantic_gen/semantic_gen.dart';
-
-part 'home.tagged.g.dart';
-
-@AutoWrapWidgets(['ElevatedButton'])
-library home;
 
 @AutoTag('login')
 class LoginButton extends StatelessWidget {
@@ -55,8 +49,7 @@ class LoginButton extends StatelessWidget {
 }
 ```
 
-The generator produces wrappers such as `LoginButtonTagged` and `TextTagged`
-that expose labels like `test:login:LoginButton`, making them Selenium-friendly.
+The generator will automatically wrap the `LoginButton` with a `Semantics` widget, exposing a `test:login:LoginButton` label, making it Selenium-friendly.
 
 ---
 

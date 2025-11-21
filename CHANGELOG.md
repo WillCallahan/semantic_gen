@@ -1,3 +1,11 @@
+## 0.2.3
+
+- **BREAKING**: The generator now overwrites source files to automatically wrap widgets with `Semantics`.
+- The old `.tagged.g.dart` files are no longer generated.
+- The build process now creates temporary `.semgen.dart` files which are used to generate the final output.
+- Refactored the internal APIs to separate widget collection from code generation.
+- Fixed all analyzer issues.
+
 ## 0.2.2
 
 - Temporarily pin `source_gen` to the 3.x line to stay compatible with dependent tooling that has not yet adopted 4.x.

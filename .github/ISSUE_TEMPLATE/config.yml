@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Flutter Community Support
+    url: https://flutter.dev/community
+    about: Please ask and answer questions here.
+  - name: Official Flutter GitHub Issues
+    url: https://github.com/flutter/flutter/issues
+    about: Check the official Flutter repository for core framework issues.

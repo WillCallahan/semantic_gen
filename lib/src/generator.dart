@@ -53,15 +53,16 @@ class AutoTagGenerator extends Generator {
   }
 
   StringBuffer _createBuffer(BuildStep buildStep) {
-    final library = buildStep.inputId.pathSegments.first;
+    final newExtension = '.semgen.dart';
+    final originalPath = buildStep.inputId.path;
+    final newPath =
+        originalPath.substring(0, originalPath.length - 5) + newExtension;
+
     return StringBuffer()
       ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND.')
       ..writeln('// coverage:ignore-file')
       ..writeln('// ignore_for_file: type=lint')
-      ..writeln()
-      ..writeln("part of '$library';")
-      ..writeln()
-      ..writeln("import 'package:flutter/widgets.dart';")
+      ..writeln("part of '$newPath';")
       ..writeln();
   }
 }

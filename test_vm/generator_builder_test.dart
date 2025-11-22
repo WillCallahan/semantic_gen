@@ -3,11 +3,12 @@
 @TestOn('vm')
 library generator_builder_test;
 
-import 'dart:io';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:semantic_gen/src/builder.dart';
 import 'package:test/test.dart';
+
+import 'test_fixtures.dart';
 
 const bool _isFlutterTest = bool.fromEnvironment('dart.library.ui');
 
@@ -35,14 +36,14 @@ class ProfileHeader extends StatelessWidget {
 }
 ''';
 
-      final packageAssets = _packageSourceAssets();
+      final packageAssets = packageSourceAssets();
       final writer = TestReaderWriter(rootPackage: 'semantic_gen');
       final result = await testBuilder(
         autoTagBuilder(BuilderOptions(const <String, Object?>{})),
         {
           ...packageAssets,
           'semantic_gen|lib/sample.dart': input,
-          'flutter|lib/widgets.dart': _flutterWidgetsStub,
+          'flutter|lib/widgets.dart': flutterWidgetsStub,
         },
         rootPackage: 'semantic_gen',
         readerWriter: writer,
@@ -51,7 +52,7 @@ class ProfileHeader extends StatelessWidget {
       final outputPaths =
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
-        outputPaths.any((path) => path.contains('sample.semantic_gen.g.part')),
+        outputPaths.any((path) => path.contains('sample.semgen.dart')),
         isTrue,
         reason: 'outputs: $outputPaths',
       );
@@ -75,14 +76,14 @@ class Demo extends StatelessWidget {
 }
 ''';
 
-      final packageAssets = _packageSourceAssets();
+      final packageAssets = packageSourceAssets();
       final writer = TestReaderWriter(rootPackage: 'semantic_gen');
       final result = await testBuilder(
         autoTagBuilder(BuilderOptions(const <String, Object?>{})),
         {
           ...packageAssets,
           'semantic_gen|lib/sample.dart': input,
-          'flutter|lib/widgets.dart': _flutterWidgetsStub,
+          'flutter|lib/widgets.dart': flutterWidgetsStub,
         },
         rootPackage: 'semantic_gen',
         readerWriter: writer,
@@ -91,62 +92,10 @@ class Demo extends StatelessWidget {
       final outputPaths =
           result.buildResult.outputs.map((asset) => asset.path).toList();
       expect(
-        outputPaths.any((path) => path.contains('sample.semantic_gen.g.part')),
+        outputPaths.any((path) => path.contains('sample.semgen.dart')),
         isTrue,
         reason: 'outputs: $outputPaths',
       );
     });
   });
-}
-
-const String _flutterWidgetsStub = '''
-library widgets;
-
-class Widget {
-  const Widget({Key? key});
-}
-
-class StatelessWidget extends Widget {
-  const StatelessWidget({super.key});
-
-  Widget build(BuildContext context) => throw UnimplementedError();
-}
-
-class BuildContext {}
-
-class Key {
-  const Key(String value);
-}
-
-class Text extends StatelessWidget {
-  const Text(String data, {super.key});
-
-  @override
-  Widget build(BuildContext context) => throw UnimplementedError();
-}
-
-class Semantics extends StatelessWidget {
-  const Semantics({
-    super.key,
-    required Widget child,
-    String? label,
-    bool? container,
-    bool? button,
-    bool? textField,
-    bool? enabled,
-  });
-}
-''';
-
-Map<String, String> _packageSourceAssets() {
-  String read(String relativePath) => File(relativePath).readAsStringSync();
-
-  return <String, String>{
-    'semantic_gen|lib/semantic_gen.dart': read('lib/semantic_gen.dart'),
-    'semantic_gen|lib/semantic_gen.tagged.g.dart': read(
-      'lib/semantic_gen.tagged.g.dart',
-    ),
-    'semantic_gen|lib/src/annotations.dart': read('lib/src/annotations.dart'),
-    'semantic_gen|lib/src/runtime.dart': read('lib/src/runtime.dart'),
-  };
 }

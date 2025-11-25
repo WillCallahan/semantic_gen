@@ -26,27 +26,47 @@ class AutoTagGenerator extends Generator {
     }
 
     for (final wrapper in wrappers) {
-      buffer
-        ..writeln('class ${wrapper.wrapperName} extends StatelessWidget {')
-        ..writeln(
-          '  const ${wrapper.wrapperName}({Key? key, required this.child}) : super(key: key);',
-        )
-        ..writeln()
-        ..writeln('  final ${wrapper.typeName} child;')
-        ..writeln()
-        ..writeln('  @override')
-        ..writeln('  Widget build(BuildContext context) {')
-        ..writeln('    return Semantics(')
-        ..writeln("      label: '${wrapper.semanticsLabel}',")
-        ..writeln('      container: ${wrapper.container},')
-        ..writeln('      button: ${wrapper.button},')
-        ..writeln('      textField: ${wrapper.textField},')
-        ..writeln('      enabled: ${wrapper.enabled},')
-        ..writeln('      child: child,')
-        ..writeln('    );')
-        ..writeln('  }')
-        ..writeln('}')
-        ..writeln();
+      final customTemplate = wrapper.customTemplate;
+      if (customTemplate != null) {
+        buffer
+          ..writeln('class ${wrapper.wrapperName} extends StatelessWidget {')
+          ..writeln(
+            '  const ${wrapper.wrapperName}({Key? key, required this.child}) : super(key: key);',
+          )
+          ..writeln()
+          ..writeln('  final ${wrapper.typeName} child;')
+          ..writeln()
+          ..writeln('  @override')
+          ..writeln('  Widget build(BuildContext context) {')
+          ..writeln(
+            "    return ${customTemplate.replaceAll('{{child}}', 'child')};",
+          )
+          ..writeln('  }')
+          ..writeln('}')
+          ..writeln();
+      } else {
+        buffer
+          ..writeln('class ${wrapper.wrapperName} extends StatelessWidget {')
+          ..writeln(
+            '  const ${wrapper.wrapperName}({Key? key, required this.child}) : super(key: key);',
+          )
+          ..writeln()
+          ..writeln('  final ${wrapper.typeName} child;')
+          ..writeln()
+          ..writeln('  @override')
+          ..writeln('  Widget build(BuildContext context) {')
+          ..writeln('    return Semantics(')
+          ..writeln("      label: '${wrapper.semanticsLabel}',")
+          ..writeln('      container: ${wrapper.container},')
+          ..writeln('      button: ${wrapper.button},')
+          ..writeln('      textField: ${wrapper.textField},')
+          ..writeln('      enabled: ${wrapper.enabled},')
+          ..writeln('      child: child,')
+          ..writeln('    );')
+          ..writeln('  }')
+          ..writeln('}')
+          ..writeln();
+      }
     }
 
     return buffer.toString();

@@ -95,6 +95,7 @@ class WrapperSpec {
     required this.prefix,
     required this.namespace,
     required this.testId,
+    this.customTemplate,
     bool? isButton,
     bool? isTextField,
   }) : button = isButton ?? typeName.toLowerCase().contains('button'),
@@ -114,6 +115,9 @@ class WrapperSpec {
   /// The test ID for the semantic label.
   final String? testId;
 
+  /// The custom wrapper template.
+  final String? customTemplate;
+
   /// Whether the widget is a button.
   final bool button;
 
@@ -130,7 +134,10 @@ class WrapperSpec {
   String get wrapperName => '${typeName}Tagged';
 
   /// The semantic label for the widget.
-  String get semanticsLabel {
+  String? get semanticsLabel {
+    if (customTemplate != null) {
+      return null;
+    }
     if (testId != null && testId!.isNotEmpty) {
       return '$prefix:$testId';
     }
@@ -159,6 +166,7 @@ class AutoTagClassDescriptor {
     this.namespace,
     this.testId,
     required this.isButton,
+    this.customTemplate,
   });
 
   /// Class name to wrap.
@@ -172,6 +180,16 @@ class AutoTagClassDescriptor {
 
   /// Whether the widget should expose the button semantic flag.
   final bool isButton;
+
+  /// The custom wrapper template.
+  final String? customTemplate;
+}
+
+class _WidgetToWrap {
+  const _WidgetToWrap(this.name, [this.customTemplate]);
+
+  final String name;
+  final String? customTemplate;
 }
 
 /// A class that collects widget specifications.
@@ -253,12 +271,19 @@ class WidgetCollector {
           testIdAnnotation == null ? null : ConstantReader(testIdAnnotation);
       final testId = testIdReader?.peek('value')?.stringValue;
 
+      final customWrapper = autoTagReader.peek('custom')?.objectValue;
+      final customTemplate =
+          customWrapper == null
+              ? null
+              : ConstantReader(customWrapper).peek('template')?.stringValue;
+
       descriptors.add(
         _descriptorFromMetadata(
           className: classElement.displayName,
           namespace: namespace,
           testId: testId,
           isButton: _looksLikeButton(classElement as Element2),
+          customTemplate: customTemplate,
         ),
       );
     }
@@ -266,14 +291,14 @@ class WidgetCollector {
     return _buildWrappers(
       options: options,
       classDescriptors: descriptors,
-      libraryWidgetNames: _libraryWidgetNames(library),
+      libraryWidgetNames: _libraryWidgets(library),
     );
   }
 
   List<WrapperSpec> _buildWrappers({
     required GeneratorOptions options,
     required Iterable<AutoTagClassDescriptor> classDescriptors,
-    required Iterable<String> libraryWidgetNames,
+    required Iterable<_WidgetToWrap> libraryWidgetNames,
   }) {
     final wrapperSpecs = <WrapperSpec>[];
     final emittedTypes = <String>{};
@@ -300,13 +325,13 @@ class WidgetCollector {
       );
     }
 
-    final combinedWidgetNames = <String>{
-      ...options.globalWidgets,
+    final combinedWidgetNames = <_WidgetToWrap>[
+      ...options.globalWidgets.map((e) => _WidgetToWrap(e)),
       ...libraryWidgetNames,
-    };
+    ];
 
-    for (final widgetName in combinedWidgetNames) {
-      final sanitized = _sanitizeIdentifier(widgetName);
+    for (final widget in combinedWidgetNames) {
+      final sanitized = _sanitizeIdentifier(widget.name);
       if (sanitized == null) {
         continue;
       }
@@ -316,6 +341,7 @@ class WidgetCollector {
           namespace: 'auto',
           prefix: options.prefix,
           testId: null,
+          customTemplate: widget.customTemplate,
         ),
       );
     }
@@ -328,6 +354,7 @@ class WidgetCollector {
           prefix: options.prefix,
           testId: descriptor.testId,
           isButton: descriptor.isButton,
+          customTemplate: descriptor.customTemplate,
         ),
       );
     }
@@ -336,7 +363,7 @@ class WidgetCollector {
     return wrapperSpecs;
   }
 
-  Iterable<String> _libraryWidgetNames(LibraryReader library) sync* {
+  Iterable<_WidgetToWrap> _libraryWidgets(LibraryReader library) sync* {
     for (final annotated in library.libraryDirectivesAnnotatedWith(
       _autoWrapChecker,
     )) {
@@ -344,18 +371,26 @@ class WidgetCollector {
       if (widgetTypes == null || !widgetTypes.isList) {
         continue;
       }
+      final customWrapper = annotated.annotation.peek('custom')?.objectValue;
+      final customTemplate =
+          customWrapper == null
+              ? null
+              : ConstantReader(customWrapper).peek('template')?.stringValue;
+
       yield* _widgetNamesFromStrings(
         widgetTypes.listValue.map((entry) => entry.toStringValue()),
+        customTemplate,
       );
     }
   }
 
-  static Iterable<String> _widgetNamesFromStrings(
+  static Iterable<_WidgetToWrap> _widgetNamesFromStrings(
     Iterable<String?> values,
+    String? customTemplate,
   ) sync* {
     for (final value in values) {
       if (value != null && value.isNotEmpty) {
-        yield value;
+        yield _WidgetToWrap(value, customTemplate);
       }
     }
   }
@@ -365,6 +400,7 @@ class WidgetCollector {
     String? namespace,
     String? testId,
     required bool isButton,
+    String? customTemplate,
   }) {
     final sanitizedName = _sanitizeIdentifier(className) ?? className;
     final normalizedNamespace =
@@ -377,6 +413,7 @@ class WidgetCollector {
       namespace: normalizedNamespace,
       testId: normalizedTestId,
       isButton: isButton,
+      customTemplate: customTemplate,
     );
   }
 

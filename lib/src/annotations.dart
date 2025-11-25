@@ -17,11 +17,14 @@ class TestId {
 /// appears in labels such as `test:auto:LoginButton`.
 class AutoTag {
   /// Creates an [AutoTag] annotation.
-  const AutoTag([this.namespace]);
+  const AutoTag([this.namespace, this.custom]);
 
   /// Optional namespace inserted between the prefix and the class name in the
   /// generated semantics label.
   final String? namespace;
+
+  /// Optional custom wrapper to apply to the widget.
+  final WrapperTemplate? custom;
 }
 
 /// Declares additional widget types that should receive automatically generated
@@ -35,8 +38,29 @@ class AutoTag {
 /// ```
 class AutoWrapWidgets {
   /// Creates an [AutoWrapWidgets] annotation.
-  const AutoWrapWidgets(this.widgetTypes);
+  const AutoWrapWidgets(this.widgetTypes, [this.custom]);
 
   /// Names of widget classes that should be wrapped.
   final List<String> widgetTypes;
+
+  /// Optional custom wrapper to apply to the widget.
+  final WrapperTemplate? custom;
+}
+
+/// A wrapper template to apply to a widget.
+///
+/// The template must contain the `{{child}}` placeholder, which will be
+/// replaced with the original widget.
+///
+/// Example:
+/// ```dart
+/// @AutoTag(custom: WrapperTemplate('MyWrapper(child: {{child}})')
+/// class MyWidget extends StatelessWidget { ... }
+/// ```
+class WrapperTemplate {
+  /// Creates a [WrapperTemplate] annotation.
+  const WrapperTemplate(this.template);
+
+  /// The wrapper template.
+  final String template;
 }

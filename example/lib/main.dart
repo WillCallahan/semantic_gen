@@ -1,12 +1,5 @@
-// ignore_for_file: unnecessary_library_name
-
-@AutoWrapWidgets(['ElevatedButton', 'DropdownButton'])
-library semantic_gen_example;
-
 import 'package:flutter/material.dart';
 import 'package:semantic_gen/semantic_gen.dart';
-
-part 'main.tagged.g.dart';
 
 void main() {
   runApp(const ExampleApp());
@@ -45,29 +38,21 @@ class LoginForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: const <Widget>[
-        TextTagged(
-          child: Text(
-            'Sign in to your account',
-            textAlign: TextAlign.center,
-          ),
+        Text(
+          'Sign in to your account',
+          textAlign: TextAlign.center,
         ),
         SizedBox(height: 24),
-        TextFieldTagged(
-          child: TextField(
-            decoration: InputDecoration(labelText: 'Email'),
-          ),
+        TextField(
+          decoration: InputDecoration(labelText: 'Email'),
         ),
         SizedBox(height: 16),
-        TextFieldTagged(
-          child: TextField(
-            decoration: InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
+        TextField(
+          decoration: InputDecoration(labelText: 'Password'),
+          obscureText: true,
         ),
         SizedBox(height: 24),
-        LoginButtonTagged(
-          child: LoginButton(),
-        ),
+        LoginButton(),
       ],
     );
   }

@@ -5,11 +5,18 @@ import 'package:source_gen/source_gen.dart';
 
 import 'collector.dart';
 import 'generator.dart';
+import 'rewriter_builder.dart'; // Import the new rewriter builder
 
 /// Creates the build_runner builder that drives the semantics generator.
 Builder autoTagBuilder(BuilderOptions options) {
   final generatorOptions = GeneratorOptions.parseConfig(options.config);
   return _SemanticGeneratorBuilder(generatorOptions);
+}
+
+/// Creates the build_runner builder that rewrites Dart files.
+Builder rewriterBuilder(BuilderOptions options) {
+  final generatorOptions = GeneratorOptions.parseConfig(options.config);
+  return RewriterBuilder(generatorOptions);
 }
 
 /// A builder that emits tagged wrappers alongside each Dart library.

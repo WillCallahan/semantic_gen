@@ -1,0 +1,5 @@
+targets:
+  $default:
+    builders:
+      semantic_gen:rewriter_builder:
+        enabled: true

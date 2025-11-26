@@ -1,7 +1,7 @@
 name: semantic_gen
 description: >
   Compile-time helpers that expose Selenium-friendly semantics for Flutter Web and Widget tests.
-version: 0.2.3
+version: 0.2.4
 homepage: https://github.com/WillCallahan/semantic_gen
 repository: https://github.com/WillCallahan/semantic_gen
 issue_tracker: https://github.com/WillCallahan/semantic_gen/issues

@@ -35,3 +35,7 @@ dev_dependencies:
   coverage: ^1.15.0
 flutter:
   uses-material-design: true
+
+executables:
+  rewrite:
+  apply:

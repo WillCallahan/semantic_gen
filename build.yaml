@@ -4,6 +4,10 @@ targets:
       semantic_gen:auto_tag_builder:
         generate_for:
           - lib/**.dart
+      semantic_gen:rewriter_builder:
+        enabled: false # Disabled by default
+        generate_for:
+          - lib/**.dart
 
 builders:
   auto_tag_builder:
@@ -12,3 +16,9 @@ builders:
     build_extensions: {".dart": [".semgen.dart"]}
     auto_apply: dependents
     build_to: cache
+
+  rewriter_builder:
+    import: "package:semantic_gen/src/builder.dart"
+    builder_factories: ["rewriterBuilder"]
+    build_extensions: {".dart": [".rewritten.dart"]}
+    auto_apply: dependents

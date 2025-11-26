@@ -1,3 +1,7 @@
+## 0.2.4
+
+- Replace files in place with wrapped Semantics
+
 ## 0.2.3
 
 - **BREAKING**: The generator now overwrites source files to automatically wrap widgets with `Semantics`.

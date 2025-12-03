@@ -1,8 +1,11 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:async';
 
-import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'collector.dart';
@@ -17,8 +20,8 @@ class RewriterBuilder implements Builder {
 
   @override
   Map<String, List<String>> get buildExtensions => const {
-        '.dart': ['.rewritten.dart'],
-      };
+    '.dart': ['.rewritten.dart'],
+  };
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -41,16 +44,20 @@ class RewriterBuilder implements Builder {
       return;
     }
 
-    final parsedResult = await resolver.getParsedLibraryResult(inputId);
-    final unit = parsedResult.unit;
-    final source = parsedResult.content;
+    final source = await buildStep.readAsString(inputId);
+    final unit = await resolver.compilationUnitFor(
+      inputId,
+      allowSyntaxErrors: true,
+    );
 
     final visitor = WidgetVisitor(wrapperSpecs);
     unit.accept(visitor);
 
     if (visitor.changes.isNotEmpty) {
       final newSource = _applyChanges(source, visitor.changes);
-      final formatter = DartFormatter();
+      final formatter = DartFormatter(
+        languageVersion: _languageVersionFor(unit),
+      );
       await buildStep.writeAsString(
         inputId.changeExtension('.rewritten.dart'),
         formatter.format(newSource),
@@ -69,5 +76,13 @@ class RewriterBuilder implements Builder {
       );
     }
     return newSource;
+  }
+
+  Version _languageVersionFor(CompilationUnit unit) {
+    final token = unit.languageVersionToken;
+    if (token != null) {
+      return Version(token.major, token.minor, 0);
+    }
+    return DartFormatter.latestLanguageVersion;
   }
 }

@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:semantic_gen/src/collector.dart';
 import 'package:semantic_gen/src/rewriter.dart';
 import 'package:semantic_gen/src/wrapper_collector.dart';
@@ -24,10 +27,11 @@ Future<void> main(List<String> args) async {
 
   await for (final file in glob.list(root: libDir)) {
     if (file is File) {
-      final source = await file.readAsString();
-      final result = await session.getResolvedUnit(file.path) as ResolvedUnitResult;
+      final dartFile = file as File;
+      final source = await dartFile.readAsString();
+      final result = await session.getResolvedUnit(dartFile.path) as ResolvedUnitResult;
       
-      final library = result.libraryElement;
+      final library = result.libraryElement2;
       final libraryReader = LibraryReader(library);
 
       final wrapperSpecs = collectWrappers(libraryReader, generatorOptions);
@@ -40,9 +44,12 @@ Future<void> main(List<String> args) async {
 
       if (visitor.changes.isNotEmpty) {
         final newSource = _applyChanges(source, visitor.changes);
-        final formatter = DartFormatter();
-        await file.writeAsString(formatter.format(newSource));
-        print('Rewrote ${p.relative(file.path)}');
+        final formatter = DartFormatter(
+          languageVersion:
+              _languageVersionFor(result.unit),
+        );
+        await dartFile.writeAsString(formatter.format(newSource));
+        stdout.writeln('Rewrote ${p.relative(dartFile.path)}');
       }
     }
   }
@@ -59,4 +66,12 @@ String _applyChanges(String source, List<Change> changes) {
     );
   }
   return newSource;
+}
+
+Version _languageVersionFor(CompilationUnit unit) {
+  final token = unit.languageVersionToken;
+  if (token != null) {
+    return Version(token.major, token.minor, 0);
+  }
+  return DartFormatter.latestLanguageVersion;
 }

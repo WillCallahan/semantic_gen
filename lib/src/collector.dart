@@ -1,5 +1,4 @@
 import 'package:build/build.dart';
-import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:yaml/yaml.dart';
 
@@ -158,7 +157,6 @@ class DefaultWidgetConfig {
 }
 
 /// A lightweight descriptor for a class that will receive a semantics wrapper.
-@visibleForTesting
 class AutoTagClassDescriptor {
   /// Creates a descriptor for tests and helper paths.
   const AutoTagClassDescriptor({

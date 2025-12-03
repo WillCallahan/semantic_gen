@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:collection/collection.dart';
@@ -21,14 +23,14 @@ class WidgetVisitor extends RecursiveAstVisitor<void> {
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     super.visitInstanceCreationExpression(node);
 
-    final typeName = node.constructorName.type.name.name;
+    final typeAnnotation = node.constructorName.type;
+    final typeName = typeAnnotation.name2.lexeme;
     final wrapper = wrapperSpecs.firstWhereOrNull(
       (spec) => spec.typeName == typeName,
     );
 
     if (wrapper != null) {
-      final replacement =
-          '${wrapper.wrapperName}(child: ${node.toSource()})';
+      final replacement = '${wrapper.wrapperName}(child: ${node.toSource()})';
       changes.add(Change(node.offset, node.length, replacement));
     }
   }

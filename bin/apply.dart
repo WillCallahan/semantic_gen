@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as p;
 
 Future<void> main(List<String> args) async {
@@ -11,13 +12,13 @@ Future<void> main(List<String> args) async {
     if (file is File) {
       final rewrittenFile = file as File;
       final originalPath =
-          p.withoutExtension(rewrittenFile.path) + '.dart';
+          '${p.withoutExtension(rewrittenFile.path)}.dart';
       final originalFile = File(originalPath);
 
       await originalFile.writeAsString(await rewrittenFile.readAsString());
       await rewrittenFile.delete();
 
-      print('Applied changes to ${p.relative(originalPath)}');
+      stdout.writeln('Applied changes to ${p.relative(originalPath)}');
     }
   }
 }

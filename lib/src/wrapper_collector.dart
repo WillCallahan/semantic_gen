@@ -1,10 +1,10 @@
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 
 import 'collector.dart';
 
+/// Collects wrapper specifications for a library using the provided options.
 List<WrapperSpec> collectWrappers(
   LibraryReader library,
   GeneratorOptions options,
@@ -12,8 +12,7 @@ List<WrapperSpec> collectWrappers(
   final descriptors = <AutoTagClassDescriptor>[];
 
   for (final classElement in library.classes) {
-    final autoTagAnnotation =
-        _autoTagChecker.firstAnnotationOf(classElement);
+    final autoTagAnnotation = _autoTagChecker.firstAnnotationOf(classElement);
     if (autoTagAnnotation == null) {
       continue;
     }
@@ -177,9 +176,7 @@ bool _looksLikeButton(Element2 element) {
   if (element is! InterfaceElement2) return false;
   return _inferButtonFlag(
     name: element.displayName,
-    superTypes: element.allSupertypes.map(
-      (type) => type.element3.displayName,
-    ),
+    superTypes: element.allSupertypes.map((type) => type.element3.displayName),
   );
 }
 
@@ -201,30 +198,29 @@ String? _sanitizeIdentifier(String value) {
   return match.hasMatch(value) ? value : null;
 }
 
-const List<DefaultWidgetConfig> _defaultWidgets =
-    <DefaultWidgetConfig>[
-      DefaultWidgetConfig('Text'),
-      DefaultWidgetConfig('SelectableText'),
-      DefaultWidgetConfig('TextField'),
-      DefaultWidgetConfig('TextFormField'),
-      DefaultWidgetConfig('GestureDetector', isButton: true),
-      DefaultWidgetConfig('InkWell', isButton: true),
-      DefaultWidgetConfig('InkResponse', isButton: true),
-      DefaultWidgetConfig('RawMaterialButton', isButton: true),
-      DefaultWidgetConfig('ElevatedButton', isButton: true),
-      DefaultWidgetConfig('FilledButton', isButton: true),
-      DefaultWidgetConfig('OutlinedButton', isButton: true),
-      DefaultWidgetConfig('TextButton', isButton: true),
-      DefaultWidgetConfig('IconButton', isButton: true),
-      DefaultWidgetConfig('FloatingActionButton', isButton: true),
-      DefaultWidgetConfig('DropdownButton', isButton: true),
-      DefaultWidgetConfig('PopupMenuButton', isButton: true),
-      DefaultWidgetConfig('MenuItemButton', isButton: true),
-      DefaultWidgetConfig('ListTile', isButton: true),
-      DefaultWidgetConfig('CheckboxListTile', isButton: true),
-      DefaultWidgetConfig('SwitchListTile', isButton: true),
-      DefaultWidgetConfig('RadioListTile', isButton: true),
-    ];
+const List<DefaultWidgetConfig> _defaultWidgets = <DefaultWidgetConfig>[
+  DefaultWidgetConfig('Text'),
+  DefaultWidgetConfig('SelectableText'),
+  DefaultWidgetConfig('TextField'),
+  DefaultWidgetConfig('TextFormField'),
+  DefaultWidgetConfig('GestureDetector', isButton: true),
+  DefaultWidgetConfig('InkWell', isButton: true),
+  DefaultWidgetConfig('InkResponse', isButton: true),
+  DefaultWidgetConfig('RawMaterialButton', isButton: true),
+  DefaultWidgetConfig('ElevatedButton', isButton: true),
+  DefaultWidgetConfig('FilledButton', isButton: true),
+  DefaultWidgetConfig('OutlinedButton', isButton: true),
+  DefaultWidgetConfig('TextButton', isButton: true),
+  DefaultWidgetConfig('IconButton', isButton: true),
+  DefaultWidgetConfig('FloatingActionButton', isButton: true),
+  DefaultWidgetConfig('DropdownButton', isButton: true),
+  DefaultWidgetConfig('PopupMenuButton', isButton: true),
+  DefaultWidgetConfig('MenuItemButton', isButton: true),
+  DefaultWidgetConfig('ListTile', isButton: true),
+  DefaultWidgetConfig('CheckboxListTile', isButton: true),
+  DefaultWidgetConfig('SwitchListTile', isButton: true),
+  DefaultWidgetConfig('RadioListTile', isButton: true),
+];
 
 const TypeChecker _autoTagChecker = TypeChecker.fromUrl(
   'package:semantic_gen/src/annotations.dart#AutoTag',
